@@ -1,6 +1,6 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job">
-  <description>Buy-01 e-commerce CI/CD pipeline. Clones the public GitHub repo anonymously over HTTPS — no credential needed unless the repo is made private.</description>
+  <description>Buy-01 e-commerce CI/CD pipeline. Clones the public GitHub repo anonymously over HTTPS - no credential needed unless the repo is made private.</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
@@ -9,6 +9,7 @@
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
           <url>https://github.com/7abib04/buy-01-with-safe-zone.git</url>
+          <credentialsId></credentialsId>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>
