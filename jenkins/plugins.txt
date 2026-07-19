@@ -1,0 +1,9 @@
+git
+workflow-aggregator
+configuration-as-code
+mailer
+junit
+credentials-binding
+timestamper
+ws-cleanup
+pipeline-stage-view

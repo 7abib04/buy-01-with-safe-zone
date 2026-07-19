@@ -1,0 +1,23 @@
+jenkins:
+  systemMessage: "Buy-01 CI/CD Jenkins (local dev instance)"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID:-admin}"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin123}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  # SMTP (Manage Jenkins -> System -> E-mail Notification) is deliberately
+  # NOT managed here. It was configured by hand in the Jenkins UI against a
+  # real mail provider with a real app-password credential, which CasC has
+  # no business overwriting on every restart. It persists in JENKINS_HOME
+  # (the jenkins_home Docker volume) as long as that volume isn't wiped
+  # (`docker compose down -v`) — if it ever is, redo it manually via the UI.
+  location:
+    adminAddress: "Buy-01 CI <ci@buy01.local>"
+    url: "http://localhost:8090/"

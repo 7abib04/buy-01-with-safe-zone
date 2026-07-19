@@ -1,0 +1,7 @@
+# Backend build and IDE output
+/backend/**/target/
+/backend/**/bin/
+
+# Backend runtime logs
+/backend/run-logs/
+/backend/*.log

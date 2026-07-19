@@ -1,0 +1,25 @@
+services:
+  jenkins:
+    build: .
+    user: root
+    restart: unless-stopped
+    environment:
+      JENKINS_ADMIN_ID: admin
+      JENKINS_ADMIN_PASSWORD: admin123
+    ports:
+      - "8090:8080" # 8080 is left free for the app's own gateway-service
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./casc/jenkins.yaml:/usr/share/jenkins/ref/casc_configs/jenkins.yaml:ro
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # web UI to view notification emails
+      - "1025:1025" # SMTP endpoint Jenkins sends to
+
+volumes:
+  jenkins_home:
