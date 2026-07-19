@@ -1,6 +1,6 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job">
-  <description>Buy-01 e-commerce CI/CD pipeline. Requires a &quot;reboot-git-creds&quot; credential to be added manually before the first build.</description>
+  <description>Buy-01 e-commerce CI/CD pipeline. Clones the public GitHub repo anonymously over HTTPS — no credential needed unless the repo is made private.</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps">
@@ -8,8 +8,7 @@
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
-          <url>https://learn.reboot01.com/git/hmansoor/buy-01.git</url>
-          <credentialsId>reboot-git-creds</credentialsId>
+          <url>https://github.com/7abib04/buy-01-with-safe-zone.git</url>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>
       <branches>

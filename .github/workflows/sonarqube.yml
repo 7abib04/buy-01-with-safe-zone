@@ -1,0 +1,186 @@
+name: SonarQube Quality Gate
+
+# Scans both SonarQube projects (buy-01-backend, buy-01-frontend — see
+# sonarqube/README.md) on every push and pull request, and fails the build if
+# either quality gate doesn't pass. SonarQube itself runs as a throwaway
+# `services:` container for the duration of this job (fresh instance, default
+# admin/admin credentials are expected here — see the "Bootstrap SonarQube"
+# step) so this needs no secrets, tunnels, or self-hosted runner to work from
+# a clean fork. It's independent of the persistent local SonarQube instance
+# used for day-to-day dashboards/SonarLint (sonarqube/docker-compose.yml).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  sonarqube:
+    name: SonarQube Quality Gate
+    runs-on: ubuntu-latest
+
+    services:
+      sonarqube:
+        image: sonarqube:community
+        ports:
+          - 9000:9000
+        env:
+          SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+        options: >-
+          --health-cmd "curl -fsS http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"
+          --health-interval 15s
+          --health-timeout 5s
+          --health-retries 30
+          --health-start-period 60s
+
+    env:
+      SONAR_HOST_URL: http://localhost:9000
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # SonarQube uses history for blame / new-code detection
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Wait for SonarQube to be ready
+        run: |
+          set -e
+          for i in $(seq 1 30); do
+            status=$(curl -s "$SONAR_HOST_URL/api/system/status" | jq -r '.status // empty')
+            echo "SonarQube status: ${status:-unknown}"
+            if [ "$status" = "UP" ]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::SonarQube never reported status UP"
+          exit 1
+
+      - name: Bootstrap SonarQube projects and tokens
+        id: bootstrap
+        run: |
+          set -e
+          create_project() {
+            key="$1"
+            name="$2"
+            curl -s -u admin:admin -X POST "$SONAR_HOST_URL/api/projects/create" \
+              -d "project=$key" -d "name=$name" > /dev/null
+          }
+
+          generate_token() {
+            name="$1"
+            curl -s -u admin:admin -X POST "$SONAR_HOST_URL/api/user_tokens/generate" \
+              -d "name=$name" | jq -r '.token'
+          }
+
+          create_project "buy-01-backend" "Buy-01 Backend"
+          create_project "buy-01-frontend" "Buy-01 Frontend"
+
+          backend_token="$(generate_token "ci-backend-$GITHUB_RUN_ID")"
+          frontend_token="$(generate_token "ci-frontend-$GITHUB_RUN_ID")"
+
+          echo "::add-mask::$backend_token"
+          echo "::add-mask::$frontend_token"
+          echo "backend_token=$backend_token" >> "$GITHUB_OUTPUT"
+          echo "frontend_token=$frontend_token" >> "$GITHUB_OUTPUT"
+
+      - name: Backend build, test, and analysis
+        working-directory: backend
+        run: |
+          mvn -B -ntp clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.host.url="$SONAR_HOST_URL" \
+            -Dsonar.token="${{ steps.bootstrap.outputs.backend_token }}"
+
+      - name: Frontend install and test
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run test:ci
+
+      - name: Frontend analysis
+        uses: SonarSource/sonarqube-scan-action@v4
+        with:
+          projectBaseDir: frontend
+        env:
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ steps.bootstrap.outputs.frontend_token }}
+
+      - name: Check quality gates
+        run: |
+          set -e
+
+          check_gate() {
+            label="$1"
+            report_task="$2"
+
+            if [ ! -f "$report_task" ]; then
+              echo "::error::$label: no $report_task found (analysis step likely failed earlier)"
+              return 1
+            fi
+
+            ce_task_id="$(grep '^ceTaskId=' "$report_task" | cut -d= -f2-)"
+            echo "$label: waiting on background task $ce_task_id"
+
+            status="PENDING"
+            for i in $(seq 1 60); do
+              task_json="$(curl -s -u admin:admin "$SONAR_HOST_URL/api/ce/task?id=$ce_task_id")"
+              status="$(echo "$task_json" | jq -r '.task.status')"
+              if [ "$status" = "SUCCESS" ] || [ "$status" = "FAILED" ] || [ "$status" = "CANCELED" ]; then
+                break
+              fi
+              sleep 5
+            done
+
+            if [ "$status" != "SUCCESS" ]; then
+              echo "::error::$label: background analysis task ended with status $status"
+              return 1
+            fi
+
+            analysis_id="$(echo "$task_json" | jq -r '.task.analysisId')"
+            gate_json="$(curl -s -u admin:admin "$SONAR_HOST_URL/api/qualitygates/project_status?analysisId=$analysis_id")"
+            gate_status="$(echo "$gate_json" | jq -r '.projectStatus.status')"
+
+            echo "$label: quality gate status = $gate_status"
+            echo "$gate_json" | jq '.projectStatus.conditions'
+
+            if [ "$gate_status" != "OK" ]; then
+              echo "::error::$label: quality gate failed"
+              return 1
+            fi
+          }
+
+          failed=0
+          check_gate "Backend (buy-01-backend)" "backend/target/sonar/report-task.txt" || failed=1
+          check_gate "Frontend (buy-01-frontend)" "frontend/.scannerwork/report-task.txt" || failed=1
+
+          exit "$failed"
+
+      - name: Notify Slack on quality gate failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "SLACK_WEBHOOK_URL secret not set, skipping Slack notification."
+            exit 0
+          fi
+          curl -fsS -X POST -H "Content-Type: application/json" \
+            --data "{\"text\":\"SonarQube quality gate failed for ${{ github.repository }} on ${{ github.ref_name }} (${{ github.sha }}). See ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"

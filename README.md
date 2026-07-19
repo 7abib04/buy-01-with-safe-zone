@@ -341,6 +341,40 @@ The smoke test now covers:
 - gateway rate limiting for auth and media write endpoints
 - optional admin bootstrap login plus admin access to seller-owned products and media
 
+## Code Quality (SonarQube)
+
+Static analysis and security scanning run against two SonarQube projects —
+`buy-01-backend` (the Maven reactor) and `buy-01-frontend` (the Angular app):
+
+- **Local dashboard**: a persistent SonarQube instance you can browse, connect
+  SonarLint to, and track trends over time — see [`sonarqube/README.md`](sonarqube/README.md)
+  for setup, project/token creation, permissions, and notifications.
+- **GitHub Actions**: [`.github/workflows/sonarqube.yml`](.github/workflows/sonarqube.yml)
+  scans both projects on every push and pull request against a throwaway SonarQube
+  instance spun up inside the CI job itself (no secrets or local machine access
+  required) and **fails the build** if either quality gate doesn't pass.
+- **Jenkins**: the [`Jenkinsfile`](Jenkinsfile)'s `SonarQube Analysis` /
+  `SonarQube Quality Gate` stages do the same scan against the persistent local
+  instance once you've generated a token — see
+  [`jenkins/README.md`](jenkins/README.md#6-sonarqube-quality-gate).
+
+### Review & approval process
+
+1. Open a pull request against `main`. `.github/pull_request_template.md` prompts for
+   a checklist: tests pass, both SonarQube quality gates are green, any remaining
+   Blocker/Critical issues or un-reviewed security hotspots are explicitly justified,
+   and at least one reviewer has approved.
+2. `SonarQube Quality Gate` (GitHub Actions) runs automatically and reports a status
+   check on the PR.
+3. To make that check and a review actually mandatory before merge (recommended, not
+   yet configured because it requires repo admin access via the GitHub web UI): go to
+   **Settings → Branches → Add branch protection rule** for `main`, enable
+   **Require a pull request before merging** with **≥ 1 approving review**, enable
+   **Require status checks to pass before merging** and select **SonarQube Quality
+   Gate**, then save.
+4. Once a Blocker/Critical issue or security hotspot is fixed, push the fix to the
+   same PR branch — the workflow re-runs automatically and the check updates.
+
 ## Notes
 
 - The three services use separate Mongo databases on the same local Mongo instance by default.

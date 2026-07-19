@@ -5,3 +5,6 @@
 # Backend runtime logs
 /backend/run-logs/
 /backend/*.log
+
+# SonarQube scanner working directory (manual local scans)
+.scannerwork/

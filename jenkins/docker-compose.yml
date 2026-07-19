@@ -6,6 +6,16 @@ services:
     environment:
       JENKINS_ADMIN_ID: admin
       JENKINS_ADMIN_PASSWORD: admin123
+      # Analysis tokens for the persistent local SonarQube (../sonarqube), one
+      # per project, used by the JCasC "sonarqube-backend-token" /
+      # "sonarqube-frontend-token" credentials below. Generate them once in
+      # the SonarQube UI (see ../sonarqube/README.md) and export both before
+      # `docker compose up`, e.g. in PowerShell:
+      #   $env:SONAR_TOKEN_BACKEND = "..."
+      #   $env:SONAR_TOKEN_FRONTEND = "..."
+      # Left unset, the Jenkinsfile's SonarQube stage just skips with a warning.
+      SONAR_TOKEN_BACKEND: ${SONAR_TOKEN_BACKEND:-}
+      SONAR_TOKEN_FRONTEND: ${SONAR_TOKEN_FRONTEND:-}
     ports:
       - "8090:8080" # 8080 is left free for the app's own gateway-service
       - "50000:50000"
@@ -13,6 +23,9 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - ./casc/jenkins.yaml:/usr/share/jenkins/ref/casc_configs/jenkins.yaml:ro
+    networks:
+      - default
+      - sonarnet
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
@@ -20,6 +33,11 @@ services:
     ports:
       - "8025:8025" # web UI to view notification emails
       - "1025:1025" # SMTP endpoint Jenkins sends to
+
+networks:
+  sonarnet:
+    name: buy01-sonarnet
+    external: true # created by `docker compose up` in ../sonarqube — start that stack first
 
 volumes:
   jenkins_home:

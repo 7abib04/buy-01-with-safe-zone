@@ -105,6 +105,58 @@ def sendNotifications(String status, String details) {
     }
 }
 
+def sonarQualityGateScript() {
+    return '''
+        set -e
+
+        check_gate() {
+            label="$1"
+            report_task="$2"
+            token="$3"
+
+            if [ ! -f "$report_task" ]; then
+                echo "$label: no $report_task found" >&2
+                return 1
+            fi
+
+            ce_task_id="$(grep '^ceTaskId=' "$report_task" | cut -d= -f2-)"
+
+            status="PENDING"
+            for i in $(seq 1 60); do
+                task_json="$(curl -s -u "$token": "$SONAR_HOST_URL/api/ce/task?id=$ce_task_id")"
+                status="$(echo "$task_json" | jq -r '.task.status')"
+                if [ "$status" = "SUCCESS" ] || [ "$status" = "FAILED" ] || [ "$status" = "CANCELED" ]; then
+                    break
+                fi
+                sleep 5
+            done
+
+            if [ "$status" != "SUCCESS" ]; then
+                echo "$label: background analysis task ended with status $status" >&2
+                return 1
+            fi
+
+            analysis_id="$(echo "$task_json" | jq -r '.task.analysisId')"
+            gate_json="$(curl -s -u "$token": "$SONAR_HOST_URL/api/qualitygates/project_status?analysisId=$analysis_id")"
+            gate_status="$(echo "$gate_json" | jq -r '.projectStatus.status')"
+
+            echo "$label: quality gate status = $gate_status"
+            echo "$gate_json" | jq '.projectStatus.conditions'
+
+            if [ "$gate_status" != "OK" ]; then
+                echo "$label: quality gate failed" >&2
+                return 1
+            fi
+        }
+
+        failed=0
+        check_gate "Backend (buy-01-backend)" "backend/target/sonar/report-task.txt" "$SONAR_BACKEND_TOKEN" || failed=1
+        check_gate "Frontend (buy-01-frontend)" "frontend/.scannerwork/report-task.txt" "$SONAR_FRONTEND_TOKEN" || failed=1
+
+        exit "$failed"
+    '''
+}
+
 def collectComposeDiagnostics() {
     if (!fileExists("${env.APP_DIR}/docker-compose.yml")) {
         echo 'Compose diagnostics skipped because the application workspace is unavailable.'
@@ -179,6 +231,9 @@ pipeline {
         booleanParam(name: 'ROLLBACK_ON_FAILURE', defaultValue: true, description: 'Rollback to the last successful commit if deployment or health checks fail.')
         string(name: 'EMAIL_RECIPIENTS', defaultValue: '7abib2004@gmail.com', description: 'Comma-separated email recipients for build/deploy notifications.')
         string(name: 'SLACK_WEBHOOK_CREDENTIALS_ID', defaultValue: '', description: 'Optional Jenkins Secret Text credentials ID containing a Slack webhook URL.')
+        string(name: 'SONAR_HOST_URL', defaultValue: 'http://sonarqube:9000', description: 'Persistent local SonarQube URL (see sonarqube/README.md). Reachable from this container via the shared buy01-sonarnet Docker network.')
+        string(name: 'SONAR_BACKEND_TOKEN_CREDENTIALS_ID', defaultValue: 'sonarqube-backend-token', description: 'Jenkins Secret Text credentials ID containing the buy-01-backend SonarQube token. Leave blank to skip SonarQube analysis entirely.')
+        string(name: 'SONAR_FRONTEND_TOKEN_CREDENTIALS_ID', defaultValue: 'sonarqube-frontend-token', description: 'Jenkins Secret Text credentials ID containing the buy-01-frontend SonarQube token. Leave blank to skip SonarQube analysis entirely.')
     }
 
     triggers {
@@ -187,12 +242,14 @@ pipeline {
 
     environment {
         APP_DIR = 'source'
-        GIT_URL = 'https://learn.reboot01.com/git/hmansoor/buy-01.git'
-        GIT_CREDENTIALS_ID = 'reboot-git-creds'
+        GIT_URL = 'https://github.com/7abib04/buy-01-with-safe-zone.git'
+        GIT_CREDENTIALS_ID = '' // public repo, anonymous HTTPS clone — set a credential ID here if it's ever made private
         DEPLOYMENT_STARTED = 'false'
         ROLLBACK_RESULT = 'NOT_ATTEMPTED'
         GIT_COMMIT_SHORT = ''
         GIT_BRANCH_NAME = ''
+        SONAR_HOST_URL = "${params.SONAR_HOST_URL}"
+        SONAR_ANALYSIS_DONE = 'false'
     }
 
     stages {
@@ -341,6 +398,56 @@ pipeline {
                 always {
                     junit testResults: "${env.APP_DIR}/frontend/test-results/junit.xml", allowEmptyResults: true
                     archiveArtifacts artifacts: "${env.APP_DIR}/frontend/coverage/**/*", allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            when {
+                expression { return params.SONAR_BACKEND_TOKEN_CREDENTIALS_ID?.trim() && params.SONAR_FRONTEND_TOKEN_CREDENTIALS_ID?.trim() }
+            }
+            steps {
+                script {
+                    env.SONAR_ANALYSIS_DONE = 'false'
+                    try {
+                        withCredentials([
+                            string(credentialsId: params.SONAR_BACKEND_TOKEN_CREDENTIALS_ID.trim(), variable: 'SONAR_BACKEND_TOKEN'),
+                            string(credentialsId: params.SONAR_FRONTEND_TOKEN_CREDENTIALS_ID.trim(), variable: 'SONAR_FRONTEND_TOKEN')
+                        ]) {
+                            if (!env.SONAR_BACKEND_TOKEN?.trim() || !env.SONAR_FRONTEND_TOKEN?.trim()) {
+                                echo 'SonarQube token credential(s) empty, skipping SonarQube analysis. See sonarqube/README.md to generate tokens, then export SONAR_TOKEN_BACKEND/SONAR_TOKEN_FRONTEND before `docker compose up` (jenkins/README.md).'
+                                return
+                            }
+
+                            dir("${env.APP_DIR}/backend") {
+                                sh 'mvn -B -ntp clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_BACKEND_TOKEN"'
+                            }
+
+                            dir("${env.APP_DIR}/frontend") {
+                                sh 'sonar-scanner -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_FRONTEND_TOKEN"'
+                            }
+
+                            env.SONAR_ANALYSIS_DONE = 'true'
+                        }
+                    } catch (err) {
+                        echo "SonarQube analysis skipped: credential '${params.SONAR_BACKEND_TOKEN_CREDENTIALS_ID}' or '${params.SONAR_FRONTEND_TOKEN_CREDENTIALS_ID}' not usable (${err.message}). See sonarqube/README.md and jenkins/README.md."
+                    }
+                }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            when {
+                expression { return env.SONAR_ANALYSIS_DONE == 'true' }
+            }
+            steps {
+                dir(env.APP_DIR) {
+                    withCredentials([
+                        string(credentialsId: params.SONAR_BACKEND_TOKEN_CREDENTIALS_ID.trim(), variable: 'SONAR_BACKEND_TOKEN'),
+                        string(credentialsId: params.SONAR_FRONTEND_TOKEN_CREDENTIALS_ID.trim(), variable: 'SONAR_FRONTEND_TOKEN')
+                    ]) {
+                        sh sonarQualityGateScript()
+                    }
                 }
             }
         }

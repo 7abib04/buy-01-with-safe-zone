@@ -6,7 +6,7 @@ USER root
 # so the Jenkinsfile's build/test/deploy stages have everything they need.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates curl gnupg lsb-release chromium maven \
+        ca-certificates curl gnupg lsb-release chromium maven unzip jq \
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list \
@@ -17,6 +17,18 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CHROME_BIN=/usr/bin/chromium
+
+# sonar-scanner CLI for the frontend's SonarQube analysis (backend analysis
+# uses the sonar-maven-plugin instead, resolved on demand from Maven Central,
+# no separate install needed for that half).
+ARG SONAR_SCANNER_VERSION=6.2.1.4610
+RUN curl -fsSLo /tmp/sonar-scanner.zip \
+        "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux-x64.zip" \
+    && unzip -q /tmp/sonar-scanner.zip -d /opt \
+    && mv "/opt/sonar-scanner-${SONAR_SCANNER_VERSION}-linux-x64" /opt/sonar-scanner \
+    && rm /tmp/sonar-scanner.zip
+ENV PATH="/opt/sonar-scanner/bin:${PATH}"
+ENV SONAR_SCANNER_OPTS="-server"
 
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
