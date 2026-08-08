@@ -8,7 +8,7 @@
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
-          <url>https://github.com/7abib04/buy-01-with-safe-zone.git</url>
+          <url>https://github.com/7abib04/buy-02.git</url>
           <credentialsId></credentialsId>
         </hudson.plugins.git.UserRemoteConfig>
       </userRemoteConfigs>

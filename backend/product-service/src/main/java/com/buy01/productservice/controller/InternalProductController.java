@@ -1,5 +1,6 @@
 package com.buy01.productservice.controller;
 
+import com.buy01.productservice.dto.StockAdjustmentRequest;
 import com.buy01.productservice.dto.UpdateProductImagesRequest;
 import com.buy01.productservice.security.AuthenticatedUser;
 import com.buy01.productservice.service.ProductService;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,5 +43,11 @@ public class InternalProductController {
             @Valid @RequestBody UpdateProductImagesRequest request
     ) {
         productService.replaceProductImages(id, (AuthenticatedUser) authentication.getPrincipal(), request.imageUrls());
+    }
+
+    @PatchMapping("/{id}/stock")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void adjustStock(@PathVariable String id, @Valid @RequestBody StockAdjustmentRequest request) {
+        productService.adjustStock(id, request.delta());
     }
 }

@@ -6,8 +6,9 @@ This repository contains the marketplace frontend plus the Spring Boot microserv
 - `discovery-service`: Eureka service registry
 - `gateway-service`: API gateway with CORS, JWT validation on protected routes, auth header propagation, and in-memory rate limiting for auth/media writes
 - `user-service`: registration, login, JWT issuance, profile management, seller avatar upload delegation, and optional admin bootstrap
-- `product-service`: public product reads plus seller/admin CRUD with ownership enforcement and media ownership synchronization
+- `product-service`: public product reads plus seller/admin CRUD with ownership enforcement, keyword/category/price search, and media ownership synchronization
 - `media-service`: seller/admin image upload/list/delete, public image download, MIME sniffing, 2 MB limit, MinIO-backed object storage, and product ownership validation
+- `order-service`: shopping cart, checkout (Pay on Delivery), buyer/seller order management, and buyer/seller spend and revenue analytics
 
 ## One-Command Docker Run
 
@@ -44,7 +45,7 @@ Notes:
 - the frontend proxies `/api/*` to the gateway, so the browser only needs `https://localhost`
 - the first browser visit will warn because the local certificate is self-signed
 - media URLs resolve through the frontend proxy as `https://localhost/api/media/images/...`
-- the backend service ports remain exposed over HTTP for direct debugging on `8080` to `8083`
+- the backend service ports remain exposed over HTTP for direct debugging on `8080` to `8084`
 
 ## Docker Hub Fallback
 
@@ -110,7 +111,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\renew-https-cert.ps1 -UseDock
 - `GET /products/me`, `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}`
 - `GET /media/images/{id}`
 - `GET /media/images`, `POST /media/images`, `DELETE /media/images/{id}`
-- JWT validation in the gateway, product service, and media service
+- `GET/POST/PUT/DELETE /cart`, `/cart/items`, `/cart/items/{productId}`
+- `POST /orders/checkout` (Pay on Delivery), `GET /orders`, `GET /orders/{id}`, `PATCH /orders/{id}/cancel`, `POST /orders/{id}/redo`, `DELETE /orders/{id}`
+- `GET /orders/seller`, `PATCH /orders/{id}/status` (seller order fulfillment)
+- `GET /orders/analytics/me`, `GET /orders/analytics/seller` (buyer/seller spend and revenue analytics)
+- JWT validation in the gateway, product service, media service, and order service
 - Seller ownership checks for product and media mutations, including cross-service image ownership validation
 - Seller avatar upload through `user-service`, delegated to `media-service`
 - Global exception handlers with `400/401/403/404/415`
@@ -195,6 +200,11 @@ cd backend
 mvn -pl media-service spring-boot:run
 ```
 
+```bash
+cd backend
+mvn -pl order-service spring-boot:run
+```
+
 ## Environment Variables
 
 Common:
@@ -208,6 +218,7 @@ Mongo:
 - `USER_SERVICE_MONGODB_URI` default: `mongodb://localhost:27017/user_service_db`
 - `PRODUCT_SERVICE_MONGODB_URI` default: `mongodb://localhost:27017/product_service_db`
 - `MEDIA_SERVICE_MONGODB_URI` default: `mongodb://localhost:27017/media_service_db`
+- `ORDER_SERVICE_MONGODB_URI` default: `mongodb://localhost:27017/order_service_db`
 
 Gateway:
 
@@ -219,7 +230,7 @@ Gateway:
 Internal service URLs:
 
 - `MEDIA_SERVICE_INTERNAL_BASE_URL` default: `http://localhost:8083`
-- `PRODUCT_SERVICE_INTERNAL_BASE_URL` default: `http://localhost:8082`
+- `PRODUCT_SERVICE_INTERNAL_BASE_URL` default: `http://localhost:8082` (also used by `order-service` to validate stock and read product details)
 
 Media:
 
@@ -244,6 +255,7 @@ Kafka:
 - `KAFKA_BOOTSTRAP_SERVERS` default: `localhost:9092`
 - `KAFKA_PRODUCTS_TOPIC` default: `product-events`
 - `KAFKA_MEDIA_TOPIC` default: `media-events`
+- `KAFKA_ORDERS_TOPIC` default: `order-events`
 
 HTTPS:
 

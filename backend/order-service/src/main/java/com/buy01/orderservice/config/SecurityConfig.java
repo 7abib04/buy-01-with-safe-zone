@@ -1,8 +1,7 @@
-package com.buy01.productservice.config;
+package com.buy01.orderservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,15 +33,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/internal/products/*/ownership").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/internal/products/*/images").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/internal/products/*/stock").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/products/me").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/products").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/products/*").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/products/*").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/products", "/products/*").permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

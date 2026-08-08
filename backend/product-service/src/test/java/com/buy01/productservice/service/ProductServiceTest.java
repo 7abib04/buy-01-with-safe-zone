@@ -169,4 +169,33 @@ class ProductServiceTest {
                     assertThat(product.sellerId()).isEqualTo("seller-1");
                 });
     }
+
+    @Test
+    void adjustStockDecrementsQuantity() {
+        Product product = new Product();
+        product.setId("product-1");
+        product.setName("Phone");
+        product.setQuantity(5);
+
+        when(productRepository.findById("product-1")).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        productService.adjustStock("product-1", -2);
+
+        assertThat(product.getQuantity()).isEqualTo(3);
+        verify(productEventPublisher).publishUpdated(product);
+    }
+
+    @Test
+    void adjustStockRejectsGoingNegative() {
+        Product product = new Product();
+        product.setId("product-1");
+        product.setName("Phone");
+        product.setQuantity(1);
+
+        when(productRepository.findById("product-1")).thenReturn(Optional.of(product));
+
+        assertThatThrownBy(() -> productService.adjustStock("product-1", -5))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }

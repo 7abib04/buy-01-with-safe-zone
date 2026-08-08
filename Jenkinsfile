@@ -45,6 +45,7 @@ def healthCheckScript() {
         wait_for_service user-service 30
         wait_for_service product-service 30
         wait_for_service media-service 30
+        wait_for_service order-service 30
         wait_for_service frontend 20
 
         docker compose ps
@@ -53,6 +54,7 @@ def healthCheckScript() {
         docker compose exec -T user-service curl -fsS http://localhost:8081/actuator/health
         docker compose exec -T product-service curl -fsS http://localhost:8082/actuator/health
         docker compose exec -T media-service curl -fsS http://localhost:8083/actuator/health
+        docker compose exec -T order-service curl -fsS http://localhost:8084/actuator/health
         docker compose exec -T frontend curl -fsS http://localhost/healthz
     '''
 }
@@ -242,7 +244,7 @@ pipeline {
 
     environment {
         APP_DIR = 'source'
-        GIT_URL = 'https://github.com/7abib04/buy-01-with-safe-zone.git'
+        GIT_URL = 'https://github.com/7abib04/buy-02.git'
         GIT_CREDENTIALS_ID = '' // public repo, anonymous HTTPS clone — set a credential ID here if it's ever made private
         DEPLOYMENT_STARTED = 'false'
         ROLLBACK_RESULT = 'NOT_ATTEMPTED'
@@ -337,6 +339,19 @@ pipeline {
                     post {
                         always {
                             junit testResults: "${env.APP_DIR}/backend/product-service/target/surefire-reports/*.xml", allowEmptyResults: true
+                        }
+                    }
+                }
+
+                stage('Order Service Tests') {
+                    steps {
+                        dir("${env.APP_DIR}/backend") {
+                            sh 'mvn -B -ntp -pl order-service -am test'
+                        }
+                    }
+                    post {
+                        always {
+                            junit testResults: "${env.APP_DIR}/backend/order-service/target/surefire-reports/*.xml", allowEmptyResults: true
                         }
                     }
                 }

@@ -132,6 +132,18 @@ public class ProductService {
         findManagedProduct(productId, user);
     }
 
+    public void adjustStock(String productId, int delta) {
+        Product product = findById(productId);
+        int newQuantity = product.getQuantity() + delta;
+        if (newQuantity < 0) {
+            throw new IllegalArgumentException("Not enough stock available for: " + product.getName());
+        }
+        product.setQuantity(newQuantity);
+        product.setUpdatedAt(Instant.now());
+        Product persistedProduct = productRepository.save(product);
+        productEventPublisher.publishUpdated(persistedProduct);
+    }
+
     private Product findById(String id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
