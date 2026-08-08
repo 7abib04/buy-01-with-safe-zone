@@ -1,0 +1,76 @@
+<div class="page-container cart-page">
+  <header class="page-header">
+    <span class="section-kicker">Your Bag</span>
+    <h1>Shopping Cart</h1>
+  </header>
+
+  <app-loading-spinner *ngIf="isLoading" [fullPage]="false"></app-loading-spinner>
+
+  <app-empty-state
+    *ngIf="!isLoading && cart.items.length === 0"
+    [icon]="ShoppingBagIcon"
+    heading="Your cart is empty"
+    description="Browse the catalog and add something you like."
+    actionLabel="Browse products"
+    (action)="goToProducts()">
+  </app-empty-state>
+
+  <ng-container *ngIf="!isLoading && cart.items.length > 0">
+    <div class="cart-layout">
+      <section class="cart-items glass">
+        <article class="cart-item" *ngFor="let item of cart.items; trackBy: trackByProductId" [class.pending]="isPending(item.productId)">
+          <div class="item-image">
+            <app-media-image [src]="item.imageUrl || null" [alt]="item.name" [fallbackIconSize]="28"></app-media-image>
+          </div>
+
+          <div class="item-info">
+            <strong class="item-name">{{ item.name }}</strong>
+            <span class="item-price">{{ item.price | currency:'USD':'symbol':'1.0-2' }} each</span>
+          </div>
+
+          <div class="item-quantity">
+            <button type="button" class="qty-btn" (click)="decrement(item)" [disabled]="isPending(item.productId)" aria-label="Decrease quantity">
+              <lucide-icon [img]="MinusIcon" size="14"></lucide-icon>
+            </button>
+            <span class="qty-value">{{ item.quantity }}</span>
+            <button type="button" class="qty-btn" (click)="increment(item)" [disabled]="isPending(item.productId)" aria-label="Increase quantity">
+              <lucide-icon [img]="PlusIcon" size="14"></lucide-icon>
+            </button>
+          </div>
+
+          <strong class="item-subtotal">{{ item.subtotal | currency:'USD':'symbol':'1.0-2' }}</strong>
+
+          <button type="button" class="remove-btn" (click)="removeItem(item)" [disabled]="isPending(item.productId)" aria-label="Remove item">
+            <lucide-icon [img]="Trash2Icon" size="16"></lucide-icon>
+          </button>
+        </article>
+      </section>
+
+      <aside class="cart-summary glass">
+        <span class="section-kicker">Order Summary</span>
+
+        <div class="summary-row">
+          <span>Items</span>
+          <strong>{{ cart.totalItems }}</strong>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <strong>{{ cart.totalAmount | currency:'USD':'symbol':'1.0-2' }}</strong>
+        </div>
+
+        <a routerLink="/checkout" class="btn-primary checkout-btn">Proceed to checkout</a>
+        <button type="button" class="btn-ghost clear-btn" (click)="isClearConfirmOpen = true">Clear cart</button>
+      </aside>
+    </div>
+  </ng-container>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isClearConfirmOpen"
+  title="Clear your cart?"
+  message="This removes every item currently in your cart."
+  confirmText="Clear cart"
+  cancelText="Keep items"
+  (confirm)="clearCart(); isClearConfirmOpen = false"
+  (cancel)="isClearConfirmOpen = false">
+</app-confirm-dialog>

@@ -96,6 +96,18 @@
           <span class="seller-link">View seller</span>
         </a>
 
+        <div class="cart-actions" *ngIf="product.quantity > 0">
+          <div class="qty-stepper">
+            <button type="button" (click)="decrementCartQuantity()" [disabled]="cartQuantity <= 1" aria-label="Decrease quantity">&minus;</button>
+            <span>{{ cartQuantity }}</span>
+            <button type="button" (click)="incrementCartQuantity()" [disabled]="cartQuantity >= product.quantity" aria-label="Increase quantity">&plus;</button>
+          </div>
+          <button type="button" class="btn-primary" (click)="addToCart()" [disabled]="isAddingToCart">
+            <span *ngIf="!isAddingToCart">Add to cart</span>
+            <span *ngIf="isAddingToCart" class="spinner-inline"></span>
+          </button>
+        </div>
+
         <div class="actions">
           <a routerLink="/products" class="btn-primary">Keep browsing</a>
         </div>

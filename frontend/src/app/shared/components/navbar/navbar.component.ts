@@ -2,17 +2,20 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   NgZone,
   OnDestroy,
   OnInit,
   inject
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LogOut } from 'lucide-angular';
+import { LogOut, ShoppingCart } from 'lucide-angular';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../../core/services/auth.service';
-import { Observable } from 'rxjs';
+import { CartService } from '../../../core/services/cart.service';
+import { Observable, distinctUntilChanged } from 'rxjs';
 import { User as UserModel } from '../../../core/models/user.model';
 import { MediaImageComponent } from '../media-image/media-image.component';
 
@@ -28,14 +31,28 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private removeScrollListener?: () => void;
 
   authService = inject(AuthService);
+  cartService = inject(CartService);
   currentUser$: Observable<UserModel | null> = this.authService.currentUser$;
   isScrolled = false;
   readonly LogOutIcon = LogOut;
+  readonly ShoppingCartIcon = ShoppingCart;
 
   ngOnInit() {
+    this.currentUser$
+      .pipe(
+        distinctUntilChanged((previous, next) => previous?.id === next?.id),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((user) => {
+        if (user) {
+          this.cartService.refresh().subscribe({ error: () => undefined });
+        }
+      });
+
     if (typeof window === 'undefined') {
       return;
     }

@@ -5,6 +5,8 @@ import { ProductService } from '../../../core/services/product.service';
 import { Product } from '../../../core/models/product.model';
 import { PublicSellerProfile } from '../../../core/models/user.model';
 import { SellerService } from '../../../core/services/seller.service';
+import { CartService } from '../../../core/services/cart.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ImageGalleryComponent } from '../../../shared/components/image-gallery/image-gallery.component';
 import { MediaImageComponent } from '../../../shared/components/media-image/media-image.component';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
@@ -22,6 +24,8 @@ export class ProductDetailComponent implements OnInit {
   route = inject(ActivatedRoute);
   productService = inject(ProductService);
   sellerService = inject(SellerService);
+  cartService = inject(CartService);
+  authService = inject(AuthService);
   toastService = inject(ToastService);
 
   product: Product | null = null;
@@ -34,6 +38,8 @@ export class ProductDetailComponent implements OnInit {
   isLoadingMoreFromSeller = false;
   isNotFound = false;
   loadingStage = 'Loading product page';
+  cartQuantity = 1;
+  isAddingToCart = false;
 
   skeletonArray = Array(3).fill(0);
 
@@ -50,6 +56,7 @@ export class ProductDetailComponent implements OnInit {
     this.isLoading = true;
     this.isNotFound = false;
     this.product = null;
+    this.cartQuantity = 1;
     this.resetSellerData();
     this.loadingStage = 'Getting product details';
     
@@ -148,6 +155,41 @@ export class ProductDetailComponent implements OnInit {
 
   trackByProductId(index: number, product: Product): string {
     return product.id;
+  }
+
+  incrementCartQuantity(): void {
+    if (this.product && this.cartQuantity < this.product.quantity) {
+      this.cartQuantity++;
+    }
+  }
+
+  decrementCartQuantity(): void {
+    if (this.cartQuantity > 1) {
+      this.cartQuantity--;
+    }
+  }
+
+  addToCart(): void {
+    if (!this.product || this.product.quantity === 0) {
+      return;
+    }
+
+    if (this.authService.isGuest()) {
+      this.toastService.show('Sign in to add items to your cart.', 'warning');
+      return;
+    }
+
+    this.isAddingToCart = true;
+    this.cartService.addItem(this.product.id, this.cartQuantity).subscribe({
+      next: () => {
+        this.isAddingToCart = false;
+        this.toastService.show('Added to cart.', 'success');
+      },
+      error: (error) => {
+        this.isAddingToCart = false;
+        this.toastService.show(error?.error?.message || 'Could not add this item to your cart.', 'error');
+      }
+    });
   }
 
   private resetSellerData(): void {

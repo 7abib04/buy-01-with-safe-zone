@@ -5,6 +5,7 @@ import { User, Role } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { normalizeManagedMediaUrl } from '../utils/media-url';
 import { ProductService } from './product.service';
+import { CartService } from './cart.service';
 
 export interface LoginCredentials {
   email: string;
@@ -29,6 +30,7 @@ export interface AuthResponse {
 export class AuthService {
   private http = inject(HttpClient);
   private productService = inject(ProductService);
+  private cartService = inject(CartService);
   private apiUrl = environment.apiUrl;
   
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -141,5 +143,6 @@ export class AuthService {
 
   private resetSessionState(): void {
     this.productService.invalidateCache();
+    this.cartService.reset();
   }
 }

@@ -255,6 +255,46 @@
   color: var(--color-accent-primary);
 }
 
+.cart-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.qty-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: rgba(241, 245, 255, 0.9);
+  box-shadow: var(--shadow-neu-sm), var(--shadow-inset);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  span {
+    min-width: 1.5rem;
+    text-align: center;
+    font-weight: 700;
+  }
+}
+
 .actions {
   display: flex;
 }

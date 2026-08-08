@@ -33,11 +33,23 @@ export const routes: Routes = [
   },
 
   // Buyer Routes (CLIENT)
-  { 
-    path: 'profile', 
+  {
+    path: 'profile',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['CLIENT'] },
     loadComponent: () => import('./features/buyer-profile/buyer-profile.component').then(m => m.BuyerProfileComponent)
+  },
+
+  // Cart & Checkout (any authenticated role)
+  {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent)
+  },
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
   },
 
   // Seller Routes (SELLER)

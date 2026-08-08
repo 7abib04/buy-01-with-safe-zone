@@ -1,0 +1,124 @@
+<div class="page-container checkout-page">
+  <header class="page-header">
+    <span class="section-kicker">Checkout</span>
+    <h1>Complete your order</h1>
+  </header>
+
+  <ol class="stepper-list">
+    <li *ngFor="let s of steps; let i = index" [class.active]="step === s.id" [class.done]="currentStepIndex > i">
+      <span class="stepper-dot"></span>
+      <span class="stepper-label">{{ s.label }}</span>
+    </li>
+  </ol>
+
+  <div class="checkout-layout" *ngIf="!isLoadingCart">
+    <section class="checkout-main glass">
+      <ng-container [ngSwitch]="step">
+        <form *ngSwitchCase="'address'" [formGroup]="addressForm" (ngSubmit)="goToReview()">
+          <span class="section-kicker">Step 1</span>
+          <h2>Shipping address</h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full name</label>
+              <input type="text" formControlName="fullName" [class.invalid]="isInvalid('fullName')" placeholder="Full name">
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="text" formControlName="phone" [class.invalid]="isInvalid('phone')" placeholder="Phone number">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" formControlName="line1" [class.invalid]="isInvalid('line1')" placeholder="Street address">
+          </div>
+
+          <div class="form-row three">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" formControlName="city" [class.invalid]="isInvalid('city')" placeholder="City">
+            </div>
+            <div class="form-group">
+              <label>Postal code</label>
+              <input type="text" formControlName="postalCode" [class.invalid]="isInvalid('postalCode')" placeholder="Postal code">
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" formControlName="country" [class.invalid]="isInvalid('country')" placeholder="Country">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Continue to review</button>
+          </div>
+        </form>
+
+        <div *ngSwitchCase="'review'">
+          <span class="section-kicker">Step 2</span>
+          <h2>Review your order</h2>
+
+          <div class="review-address">
+            <div>
+              <strong>{{ addressForm.value.fullName }}</strong>
+              <p>{{ addressForm.value.line1 }}, {{ addressForm.value.city }}, {{ addressForm.value.postalCode }}, {{ addressForm.value.country }}</p>
+              <p>{{ addressForm.value.phone }}</p>
+            </div>
+            <button type="button" class="btn-ghost" (click)="editAddress()">Edit</button>
+          </div>
+
+          <div class="review-items">
+            <div class="review-item" *ngFor="let item of cart.items">
+              <span class="review-item-name">{{ item.name }} &times; {{ item.quantity }}</span>
+              <strong>{{ item.subtotal | currency:'USD':'symbol':'1.0-2' }}</strong>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-primary" (click)="goToConfirm()">Continue to confirm</button>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="'confirm'">
+          <span class="section-kicker">Step 3</span>
+          <h2>Pay on delivery</h2>
+          <p class="confirm-copy">
+            You'll pay in cash when your order arrives. Review the total below and place your order
+            to confirm.
+          </p>
+
+          <div class="confirm-total">
+            <span>Total due on delivery</span>
+            <strong>{{ cart.totalAmount | currency:'USD':'symbol':'1.0-2' }}</strong>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-ghost" (click)="step = 'review'" [disabled]="isPlacingOrder">Back</button>
+            <button type="button" class="btn-primary" (click)="placeOrder()" [disabled]="isPlacingOrder">
+              <span *ngIf="!isPlacingOrder">Place order &mdash; Pay on Delivery</span>
+              <span *ngIf="isPlacingOrder" class="spinner-inline"></span>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+
+    <aside class="checkout-summary glass">
+      <span class="section-kicker">Order Summary</span>
+      <div class="summary-row" *ngFor="let item of cart.items">
+        <span>{{ item.name }} &times; {{ item.quantity }}</span>
+        <strong>{{ item.subtotal | currency:'USD':'symbol':'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row total">
+        <span>Total</span>
+        <strong>{{ cart.totalAmount | currency:'USD':'symbol':'1.0-2' }}</strong>
+      </div>
+    </aside>
+  </div>
+
+  <div class="empty-card" *ngIf="!isLoadingCart && cart.items.length === 0">
+    <h2>Your cart is empty</h2>
+    <p>Add products to your cart before checking out.</p>
+    <a routerLink="/products" class="btn-primary">Browse products</a>
+  </div>
+</div>

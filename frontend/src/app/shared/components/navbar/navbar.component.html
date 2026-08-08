@@ -15,6 +15,15 @@
 
     <div class="nav-right">
       <ng-container *ngIf="currentUser$ | async as user; else guestLinks">
+        <a
+          class="btn-ghost nav-cart-btn"
+          routerLink="/cart"
+          routerLinkActive="active"
+          aria-label="Open shopping cart"
+          title="Cart">
+          <lucide-icon [img]="ShoppingCartIcon" size="18"></lucide-icon>
+          <span class="cart-badge" *ngIf="(cartService.itemCount$ | async) as itemCount">{{ itemCount }}</span>
+        </a>
         <button
           type="button"
           class="btn-danger nav-logout-btn"
