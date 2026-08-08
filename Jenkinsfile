@@ -249,7 +249,13 @@ pipeline {
         GIT_COMMIT_SHORT = ''
         GIT_BRANCH_NAME = ''
         SONAR_HOST_URL = "${params.SONAR_HOST_URL}"
-        SONAR_ANALYSIS_DONE = 'false'
+        // SONAR_ANALYSIS_DONE is deliberately NOT declared here: declarative
+        // pipeline re-binds top-level `environment {}` values before every
+        // stage, which would silently overwrite the env.SONAR_ANALYSIS_DONE
+        // = 'true' set at runtime in the SonarQube Analysis stage right
+        // before the next stage's `when` reads it. Leaving it undeclared
+        // lets the runtime assignment stick; it defaults to null (falsy)
+        // until that stage sets it.
     }
 
     stages {
