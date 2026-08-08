@@ -13,6 +13,7 @@ spring:
   data:
     mongodb:
       uri: ${ORDER_SERVICE_MONGODB_URI:mongodb://localhost:27017/order_service_db}
+      auto-index-creation: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:

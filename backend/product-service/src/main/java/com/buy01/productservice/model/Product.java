@@ -22,6 +22,9 @@ public class Product {
     @Indexed
     private String sellerId;
 
+    @Indexed
+    private Category category;
+
     private List<String> imageUrls = new ArrayList<>();
     private Instant createdAt;
     private Instant updatedAt;
@@ -72,6 +75,14 @@ public class Product {
 
     public void setSellerId(String sellerId) {
         this.sellerId = sellerId;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public List<String> getImageUrls() {

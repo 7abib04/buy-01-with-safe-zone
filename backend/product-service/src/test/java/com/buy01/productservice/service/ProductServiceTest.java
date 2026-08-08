@@ -12,6 +12,7 @@ import com.buy01.productservice.dto.ProductRequest;
 import com.buy01.productservice.dto.ProductResponse;
 import com.buy01.productservice.event.ProductEventPublisher;
 import com.buy01.productservice.exception.ProductNotFoundException;
+import com.buy01.productservice.model.Category;
 import com.buy01.productservice.model.Product;
 import com.buy01.productservice.repository.ProductRepository;
 import com.buy01.productservice.security.AuthenticatedUser;
@@ -49,7 +50,8 @@ class ProductServiceTest {
                 "Flagship phone",
                 new BigDecimal("699.99"),
                 5,
-                List.of("http://localhost:8080/media/images/img-1")
+                List.of("http://localhost:8080/media/images/img-1"),
+                Category.ELECTRONICS
         );
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> {
@@ -83,7 +85,8 @@ class ProductServiceTest {
                 "Updated",
                 new BigDecimal("499.99"),
                 2,
-                List.of()
+                List.of(),
+                Category.ELECTRONICS
         );
         Product existingProduct = new Product();
         existingProduct.setId("product-1");
@@ -104,7 +107,8 @@ class ProductServiceTest {
                 "Updated",
                 new BigDecimal("499.99"),
                 2,
-                List.of()
+                List.of(),
+                Category.ELECTRONICS
         );
 
         when(productRepository.findById("product-1")).thenReturn(Optional.empty());

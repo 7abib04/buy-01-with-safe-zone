@@ -1,5 +1,6 @@
 package com.buy01.productservice.dto;
 
+import com.buy01.productservice.model.Category;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +15,7 @@ public record ProductRequest(
         @NotBlank @Size(max = 4000) String description,
         @NotNull @DecimalMin(value = "0.01") @Digits(integer = 10, fraction = 2) BigDecimal price,
         @PositiveOrZero int quantity,
-        List<@NotBlank @Size(max = 500) String> imageUrls
+        List<@NotBlank @Size(max = 500) String> imageUrls,
+        Category category
 ) {
 }

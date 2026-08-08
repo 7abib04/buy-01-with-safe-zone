@@ -5,6 +5,7 @@ import com.buy01.productservice.dto.ProductRequest;
 import com.buy01.productservice.dto.ProductResponse;
 import com.buy01.productservice.event.ProductEventPublisher;
 import com.buy01.productservice.exception.ProductNotFoundException;
+import com.buy01.productservice.model.Category;
 import com.buy01.productservice.model.Product;
 import com.buy01.productservice.repository.ProductRepository;
 import com.buy01.productservice.security.AuthenticatedUser;
@@ -72,6 +73,7 @@ public class ProductService {
         product.setQuantity(request.quantity());
         product.setImageUrls(List.of());
         product.setSellerId(user.userId());
+        product.setCategory(request.category() == null ? Category.OTHER : request.category());
         product.setCreatedAt(now);
         product.setUpdatedAt(now);
 
@@ -163,6 +165,7 @@ public class ProductService {
         product.setPrice(request.price());
         product.setQuantity(request.quantity());
         product.setImageUrls(imageUrls);
+        product.setCategory(request.category() == null ? Category.OTHER : request.category());
     }
 
     private List<String> normalizeImageUrls(List<String> imageUrls) {
@@ -187,6 +190,7 @@ public class ProductService {
                 product.getPrice(),
                 product.getQuantity(),
                 product.getSellerId(),
+                product.getCategory(),
                 imageUrls,
                 product.getCreatedAt(),
                 product.getUpdatedAt()

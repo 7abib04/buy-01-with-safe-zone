@@ -108,6 +108,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\renew-https-cert.ps1 -UseDock
 - `POST /auth/register`, `POST /auth/login`
 - `GET /me`, `PUT /me` (JSON and multipart form-data variants)
 - `GET /products`, `GET /products/{id}`
+- `GET /products/search` (keyword + category + price range, sort, pagination, and facets)
 - `GET /products/me`, `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}`
 - `GET /media/images/{id}`
 - `GET /media/images`, `POST /media/images`, `DELETE /media/images/{id}`
