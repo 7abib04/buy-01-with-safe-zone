@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { OrderService } from '../../../core/services/order.service';
@@ -16,8 +16,7 @@ const STATUS_TIMELINE: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELI
   standalone: true,
   imports: [CommonModule, RouterLink, ConfirmDialogComponent, LoadingSpinnerComponent, MediaImageComponent],
   templateUrl: './order-detail.component.html',
-  styleUrl: './order-detail.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './order-detail.component.scss'
 })
 export class OrderDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);

@@ -1,0 +1,5 @@
+# Shell scripts must keep LF endings — CRLF breaks them inside Linux
+# containers (e.g. the frontend nginx entrypoint failing with
+# "illegal option -" because `set -eu\r` isn't valid).
+*.sh text eol=lf
+Dockerfile text eol=lf

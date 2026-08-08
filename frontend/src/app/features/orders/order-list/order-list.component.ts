@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -15,8 +15,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, LucideAngularModule, EmptyStateComponent, SkeletonComponent, PaginationComponent],
   templateUrl: './order-list.component.html',
-  styleUrl: './order-list.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './order-list.component.scss'
 })
 export class OrderListComponent implements OnInit {
   private orderService = inject(OrderService);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -23,8 +23,7 @@ import { SellerPortalShellComponent } from '../../../../shared/components/seller
     SellerPortalShellComponent
   ],
   templateUrl: './seller-order-list.component.html',
-  styleUrl: './seller-order-list.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './seller-order-list.component.scss'
 })
 export class SellerOrderListComponent implements OnInit {
   private orderService = inject(OrderService);

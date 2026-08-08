@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrderService } from '../../../../core/services/order.service';
@@ -15,8 +15,7 @@ const FORWARD_SEQUENCE: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DEL
   standalone: true,
   imports: [CommonModule, RouterLink, LoadingSpinnerComponent, MediaImageComponent, SellerPortalShellComponent],
   templateUrl: './seller-order-detail.component.html',
-  styleUrl: './seller-order-detail.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './seller-order-detail.component.scss'
 })
 export class SellerOrderDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);

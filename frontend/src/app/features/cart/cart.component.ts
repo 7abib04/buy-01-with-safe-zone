@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-angular';
@@ -23,8 +23,7 @@ import { MediaImageComponent } from '../../shared/components/media-image/media-i
     MediaImageComponent
   ],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './cart.component.scss'
 })
 export class CartComponent implements OnInit {
   private cartService = inject(CartService);

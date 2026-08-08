@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -15,8 +15,7 @@ type CheckoutStep = 'address' | 'review' | 'confirm';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './checkout.component.html',
-  styleUrl: './checkout.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './checkout.component.scss'
 })
 export class CheckoutComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -94,6 +93,7 @@ export class CheckoutComponent implements OnInit {
     this.orderService.checkout(this.addressForm.getRawValue()).subscribe({
       next: (order) => {
         this.isPlacingOrder = false;
+        this.cartService.reset();
         this.toastService.show('Order placed! Pay on delivery.', 'success');
         this.router.navigate(['/orders', order.id]);
       },
