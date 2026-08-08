@@ -35,9 +35,33 @@
           <strong>{{ totalMediaAssets }}</strong>
           <p>{{ linkedMediaCount }} are already showing on product pages.</p>
         </article>
+
+        <article class="metric-card glass" *ngIf="analytics">
+          <span class="metric-label">Revenue</span>
+          <strong>{{ analytics.totalRevenue | currency:'USD':'symbol':'1.0-2' }}</strong>
+          <p>Across {{ analytics.ordersCount }} order(s) that include your products.</p>
+        </article>
+
+        <article class="metric-card glass" *ngIf="analytics">
+          <span class="metric-label">Units sold</span>
+          <strong>{{ analytics.unitsSold }}</strong>
+          <p>Total units of your products sold so far.</p>
+        </article>
       </section>
 
       <section class="dashboard-grid">
+        <article class="workspace-card glass" *ngIf="analytics">
+          <div class="card-heading">
+            <div>
+              <span class="section-kicker">Performance</span>
+              <h2>Best-selling products</h2>
+            </div>
+            <a routerLink="/seller/orders" class="section-link">View orders</a>
+          </div>
+
+          <app-bar-chart [data]="bestSellingChartData" valueSuffix=" units" emptyMessage="No sales yet."></app-bar-chart>
+        </article>
+
         <article class="workspace-card glass">
           <div class="card-heading">
             <div>

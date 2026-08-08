@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, shareReplay, tap, throwError } from 'rxjs';
-import { Product } from '../models/product.model';
+import { Product, ProductCategory } from '../models/product.model';
 import { environment } from '../../../environments/environment';
 import { normalizeManagedMediaUrls } from '../utils/media-url';
 
@@ -12,9 +12,42 @@ interface ProductResponse {
   price: number;
   quantity: number;
   sellerId: string;
+  category?: ProductCategory | null;
   imageUrls?: string[] | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ProductSearchParams {
+  q?: string;
+  category?: ProductCategory;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: 'newest' | 'oldest' | 'price_asc' | 'price_desc';
+  page?: number;
+  size?: number;
+}
+
+export interface ProductSearchResult {
+  content: Product[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  categories: string[];
+  minPrice: number;
+  maxPrice: number;
+}
+
+interface RawProductSearchResponse {
+  content: ProductResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  categories: string[];
+  minPrice: number;
+  maxPrice: number;
 }
 
 @Injectable({
@@ -112,6 +145,26 @@ export class ProductService {
     return request$;
   }
 
+  searchProducts(params: ProductSearchParams = {}): Observable<ProductSearchResult> {
+    let httpParams = new HttpParams();
+    if (params.q) httpParams = httpParams.set('q', params.q);
+    if (params.category) httpParams = httpParams.set('category', params.category);
+    if (params.minPrice !== undefined) httpParams = httpParams.set('minPrice', params.minPrice);
+    if (params.maxPrice !== undefined) httpParams = httpParams.set('maxPrice', params.maxPrice);
+    if (params.sort) httpParams = httpParams.set('sort', params.sort);
+    if (params.page !== undefined) httpParams = httpParams.set('page', params.page);
+    if (params.size !== undefined) httpParams = httpParams.set('size', params.size);
+
+    return this.http
+      .get<RawProductSearchResponse>(`${this.apiUrl}/products/search`, { params: httpParams })
+      .pipe(
+        map((result) => ({
+          ...result,
+          content: result.content.map((product) => this.normalizeProduct(product))
+        }))
+      );
+  }
+
   create(product: Partial<Product>): Observable<Product> {
     return this.http.post<ProductResponse>(`${this.apiUrl}/products`, product).pipe(
       map((createdProduct) => this.normalizeProduct(createdProduct)),
@@ -135,6 +188,7 @@ export class ProductService {
   private normalizeProduct(product: ProductResponse): Product {
     return {
       ...product,
+      category: product.category ?? undefined,
       imageUrls: normalizeManagedMediaUrls(product.imageUrls)
     };
   }

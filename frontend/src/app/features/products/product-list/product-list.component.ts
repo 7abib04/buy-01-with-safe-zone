@@ -2,19 +2,19 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../core/services/product.service';
-import { Product } from '../../../core/models/product.model';
+import { Product, ProductCategory } from '../../../core/models/product.model';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { ToastService } from '../../../core/services/toast.service';
 
-type SortOption = 'newest' | 'oldest' | 'price-low' | 'price-high' | 'stock';
-type AvailabilityOption = 'all' | 'available' | 'low-stock' | 'sold-out';
+type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductCardComponent, SkeletonComponent, EmptyStateComponent],
+  imports: [CommonModule, FormsModule, ProductCardComponent, SkeletonComponent, EmptyStateComponent, PaginationComponent],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
 })
@@ -26,58 +26,33 @@ export class ProductListComponent implements OnInit {
   isLoading = true;
   skeletonArray = Array(8).fill(0);
 
-  searchTerm = '';
+  categories: string[] = [];
   catalogMinPrice = 0;
   catalogMaxPrice = 1000;
-  sliderMaxPrice = 1000;
+
+  searchTerm = '';
+  categoryFilter: ProductCategory | '' = '';
   selectedMinPrice = 0;
   selectedMaxPrice = 1000;
-  availabilityFilter: AvailabilityOption = 'all';
   sortOption: SortOption = 'newest';
 
+  page = 0;
+  size = 12;
+  totalPages = 0;
+  totalElements = 0;
+
+  hasLoadedOnce = false;
+
   ngOnInit(): void {
-    this.productService.getAll().subscribe({
-      next: (data) => {
-        this.products = data;
-        this.syncPriceBounds(data);
-        this.isLoading = false;
-      },
-      error: () => {
-        this.toastService.show('Failed to load products.', 'error');
-        this.isLoading = false;
-      }
-    });
-  }
-
-  get filteredProducts(): Product[] {
-    const search = this.searchTerm.trim().toLowerCase();
-    const minPrice = Math.min(this.selectedMinPrice, this.selectedMaxPrice);
-    const maxPrice = Math.max(this.selectedMinPrice, this.selectedMaxPrice);
-
-    const filteredProducts = this.products.filter((product) => {
-      const productName = product.name.toLowerCase();
-      const productDescription = product.description.toLowerCase();
-      const matchesSearch =
-        search.length === 0 ||
-        productName.includes(search) ||
-        productDescription.includes(search);
-
-      const matchesMinPrice = minPrice === null || product.price >= minPrice;
-      const matchesMaxPrice = maxPrice === null || product.price <= maxPrice;
-      const matchesAvailability = this.matchesAvailability(product);
-
-      return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesAvailability;
-    });
-
-    return filteredProducts.sort((left, right) => this.compareProducts(left, right));
+    this.load();
   }
 
   get hasActiveFilters(): boolean {
     return (
       this.searchTerm.trim().length > 0 ||
+      this.categoryFilter !== '' ||
       this.selectedMinPrice > this.catalogMinPrice ||
       this.selectedMaxPrice < this.catalogMaxPrice ||
-      this.availabilityFilter !== 'all' ||
       this.sortOption !== 'newest'
     );
   }
@@ -98,83 +73,83 @@ export class ProductListComponent implements OnInit {
     return Math.max(this.maxThumbPercent - this.minThumbPercent, 0);
   }
 
-  clearFilters(): void {
-    this.searchTerm = '';
-    this.selectedMinPrice = this.catalogMinPrice;
-    this.selectedMaxPrice = this.catalogMaxPrice;
-    this.availabilityFilter = 'all';
-    this.sortOption = 'newest';
+  load(): void {
+    this.isLoading = true;
+    this.productService
+      .searchProducts({
+        q: this.searchTerm.trim() || undefined,
+        category: this.categoryFilter || undefined,
+        minPrice: this.selectedMinPrice > this.catalogMinPrice ? this.selectedMinPrice : undefined,
+        maxPrice: this.selectedMaxPrice < this.catalogMaxPrice ? this.selectedMaxPrice : undefined,
+        sort: this.sortOption,
+        page: this.page,
+        size: this.size
+      })
+      .subscribe({
+        next: (result) => {
+          this.products = result.content;
+          this.totalPages = result.totalPages;
+          this.totalElements = result.totalElements;
+          this.categories = result.categories;
+
+          if (!this.hasLoadedOnce) {
+            this.catalogMinPrice = result.minPrice;
+            this.catalogMaxPrice = result.maxPrice || 1000;
+            this.selectedMinPrice = this.catalogMinPrice;
+            this.selectedMaxPrice = this.catalogMaxPrice;
+            this.hasLoadedOnce = true;
+          }
+
+          this.isLoading = false;
+        },
+        error: () => {
+          this.toastService.show('Failed to load products.', 'error');
+          this.isLoading = false;
+        }
+      });
   }
 
-  onMinPriceChange(value: string | number | null): void {
+  onSearchSubmit(): void {
+    this.page = 0;
+    this.load();
+  }
+
+  onFilterChange(): void {
+    this.page = 0;
+    this.load();
+  }
+
+  onPageChange(page: number): void {
+    this.page = page;
+    this.load();
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.categoryFilter = '';
+    this.selectedMinPrice = this.catalogMinPrice;
+    this.selectedMaxPrice = this.catalogMaxPrice;
+    this.sortOption = 'newest';
+    this.page = 0;
+    this.load();
+  }
+
+  onMinPriceInput(value: string | number | null): void {
     const nextMin = this.normalizePrice(value, this.catalogMinPrice);
     this.selectedMinPrice = Math.min(nextMin, this.selectedMaxPrice);
   }
 
-  onMaxPriceChange(value: string | number | null): void {
+  onMaxPriceInput(value: string | number | null): void {
     const nextMax = this.normalizePrice(value, this.catalogMaxPrice);
     this.selectedMaxPrice = Math.max(nextMax, this.selectedMinPrice);
   }
 
+  onPriceCommit(): void {
+    this.onFilterChange();
+  }
+
   trackByProductId(index: number, product: Product): string {
     return product.id;
-  }
-
-  private compareProducts(left: Product, right: Product): number {
-    switch (this.sortOption) {
-      case 'oldest':
-        return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
-      case 'price-low':
-        return left.price - right.price;
-      case 'price-high':
-        return right.price - left.price;
-      case 'stock':
-        return right.quantity - left.quantity;
-      case 'newest':
-      default:
-        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
-    }
-  }
-
-  private matchesAvailability(product: Product): boolean {
-    switch (this.availabilityFilter) {
-      case 'available':
-        return product.quantity > 0;
-      case 'low-stock':
-        return product.quantity > 0 && product.quantity < 5;
-      case 'sold-out':
-        return product.quantity === 0;
-      case 'all':
-      default:
-        return true;
-    }
-  }
-
-  private syncPriceBounds(products: Product[]): void {
-    if (products.length === 0) {
-      this.catalogMinPrice = 0;
-      this.catalogMaxPrice = 1000;
-      this.sliderMaxPrice = 1000;
-      this.selectedMinPrice = 0;
-      this.selectedMaxPrice = 1000;
-      return;
-    }
-
-    const prices = products
-      .map((product) => product.price)
-      .filter((price) => Number.isFinite(price))
-      .sort((left, right) => left - right);
-
-    const minPrice = prices[0];
-    const maxPrice = prices[prices.length - 1];
-
-    this.catalogMinPrice = Number(minPrice.toFixed(2));
-    this.catalogMaxPrice = Number(maxPrice.toFixed(2));
-    this.sliderMaxPrice = this.catalogMaxPrice > this.catalogMinPrice
-      ? this.catalogMaxPrice
-      : Number((this.catalogMaxPrice + 1).toFixed(2));
-    this.selectedMinPrice = this.catalogMinPrice;
-    this.selectedMaxPrice = this.catalogMaxPrice;
   }
 
   private normalizePrice(value: string | number | null | undefined, fallback: number): number {
@@ -182,20 +157,18 @@ export class ProductListComponent implements OnInit {
       return fallback;
     }
 
-    const parsedValue = typeof value === 'number'
-      ? value
-      : Number(String(value).replace(',', '.'));
+    const parsedValue = typeof value === 'number' ? value : Number(String(value).replace(',', '.'));
 
     if (!Number.isFinite(parsedValue)) {
       return fallback;
     }
 
-    const clamped = Math.min(Math.max(parsedValue, this.catalogMinPrice), this.sliderMaxPrice);
+    const clamped = Math.min(Math.max(parsedValue, this.catalogMinPrice), this.catalogMaxPrice);
     return Number(clamped.toFixed(2));
   }
 
   private toPercent(value: number): number {
-    const span = this.sliderMaxPrice - this.catalogMinPrice;
+    const span = this.catalogMaxPrice - this.catalogMinPrice;
     if (span <= 0) {
       return 0;
     }

@@ -1,0 +1,13 @@
+<div class="bar-chart" *ngIf="data.length > 0; else emptyState">
+  <div class="bar-row" *ngFor="let datum of data">
+    <span class="bar-label" [title]="datum.label">{{ datum.label }}</span>
+    <div class="bar-track">
+      <div class="bar-fill" [style.width.%]="barWidth(datum.value)"></div>
+    </div>
+    <span class="bar-value">{{ valuePrefix }}{{ datum.value | number:'1.0-2' }}{{ valueSuffix }}</span>
+  </div>
+</div>
+
+<ng-template #emptyState>
+  <p class="bar-chart-empty">{{ emptyMessage }}</p>
+</ng-template>

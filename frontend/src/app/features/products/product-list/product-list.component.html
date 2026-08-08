@@ -4,24 +4,23 @@
       <span class="section-kicker">Curated Inventory</span>
       <h1>New products</h1>
       <p>
-        This catalog keeps only real filters powered by the existing product data:
-        text search, price range, availability, and sort order.
+        Search the full catalog by keyword, category, and price &mdash; results and sorting are
+        computed on the server.
       </p>
     </div>
 
     <div class="hero-controls">
       <label class="sort-field">
         <span>Sort by</span>
-        <select id="sortOption" [(ngModel)]="sortOption" name="sortOption">
+        <select id="sortOption" [(ngModel)]="sortOption" name="sortOption" (ngModelChange)="onFilterChange()">
           <option value="newest">Newest arrivals</option>
           <option value="oldest">Oldest first</option>
-          <option value="price-low">Price: low to high</option>
-          <option value="price-high">Price: high to low</option>
-          <option value="stock">Highest stock</option>
+          <option value="price_asc">Price: low to high</option>
+          <option value="price_desc">Price: high to low</option>
         </select>
       </label>
       <div class="hero-summary">
-        <strong>{{ isLoading ? '...' : filteredProducts.length }}</strong>
+        <strong>{{ isLoading ? '...' : totalElements }}</strong>
         <span>matching products</span>
       </div>
     </div>
@@ -29,18 +28,27 @@
 
   <div class="catalog-layout">
     <aside class="filters-sidebar glass">
-      <div class="filter-group">
+      <form class="filter-group" (ngSubmit)="onSearchSubmit()">
         <h2>Search</h2>
         <input
           type="text"
           [(ngModel)]="searchTerm"
           name="searchTerm"
           placeholder="Product name or description">
+        <button type="submit" class="btn-primary search-submit">Search</button>
+      </form>
+
+      <div class="filter-group">
+        <h2>Category</h2>
+        <select [(ngModel)]="categoryFilter" name="categoryFilter" (ngModelChange)="onFilterChange()">
+          <option value="">All categories</option>
+          <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+        </select>
       </div>
 
       <div class="filter-group">
         <h2>Price range</h2>
-        <div class="price-range-card" *ngIf="!isLoading && products.length > 0; else priceInputsLoading">
+        <div class="price-range-card" *ngIf="!isLoading || hasLoadedOnce">
           <div class="range-slider-shell">
             <div class="range-track"></div>
             <div
@@ -53,20 +61,22 @@
               class="range-input"
               type="range"
               [min]="catalogMinPrice"
-              [max]="sliderMaxPrice"
+              [max]="catalogMaxPrice"
               step="0.01"
               [value]="selectedMinPrice"
-              (input)="onMinPriceChange($any($event.target).value)"
+              (input)="onMinPriceInput($any($event.target).value)"
+              (change)="onPriceCommit()"
               aria-label="Minimum price range">
 
             <input
               class="range-input"
               type="range"
               [min]="catalogMinPrice"
-              [max]="sliderMaxPrice"
+              [max]="catalogMaxPrice"
               step="0.01"
               [value]="selectedMaxPrice"
-              (input)="onMaxPriceChange($any($event.target).value)"
+              (input)="onMaxPriceInput($any($event.target).value)"
+              (change)="onPriceCommit()"
               aria-label="Maximum price range">
           </div>
 
@@ -76,10 +86,11 @@
               <input
                 type="number"
                 [min]="catalogMinPrice"
-                [max]="sliderMaxPrice"
+                [max]="catalogMaxPrice"
                 step="0.01"
                 [ngModel]="selectedMinPrice"
-                (ngModelChange)="onMinPriceChange($event)"
+                (ngModelChange)="onMinPriceInput($event)"
+                (change)="onPriceCommit()"
                 name="minPriceInput">
             </label>
             <label>
@@ -87,10 +98,11 @@
               <input
                 type="number"
                 [min]="catalogMinPrice"
-                [max]="sliderMaxPrice"
+                [max]="catalogMaxPrice"
                 step="0.01"
                 [ngModel]="selectedMaxPrice"
-                (ngModelChange)="onMaxPriceChange($event)"
+                (ngModelChange)="onMaxPriceInput($event)"
+                (change)="onPriceCommit()"
                 name="maxPriceInput">
             </label>
           </div>
@@ -99,22 +111,6 @@
             <span>{{ catalogMinPrice | currency:'USD':'symbol':'1.0-2' }}</span>
             <span>{{ catalogMaxPrice | currency:'USD':'symbol':'1.0-2' }}</span>
           </div>
-        </div>
-
-        <ng-template #priceInputsLoading>
-          <div class="price-loading-note">
-            Price controls appear after the catalog prices load.
-          </div>
-        </ng-template>
-      </div>
-
-      <div class="filter-group">
-        <h2>Availability</h2>
-        <div class="option-list">
-          <label><input type="radio" [(ngModel)]="availabilityFilter" name="availability" value="all"> All products</label>
-          <label><input type="radio" [(ngModel)]="availabilityFilter" name="availability" value="available"> Available now</label>
-          <label><input type="radio" [(ngModel)]="availabilityFilter" name="availability" value="low-stock"> Low stock</label>
-          <label><input type="radio" [(ngModel)]="availabilityFilter" name="availability" value="sold-out"> Sold out</label>
         </div>
       </div>
 
@@ -133,25 +129,20 @@
         <app-skeleton *ngFor="let _ of skeletonArray" type="product"></app-skeleton>
       </div>
 
-      <div class="products-grid" *ngIf="!isLoading && filteredProducts.length > 0">
-        <div class="product-frame scroll-reveal" *ngFor="let product of filteredProducts; trackBy: trackByProductId">
+      <div class="products-grid" *ngIf="!isLoading && products.length > 0">
+        <div class="product-frame scroll-reveal" *ngFor="let product of products; trackBy: trackByProductId">
           <app-product-card [product]="product"></app-product-card>
         </div>
       </div>
 
       <div class="empty-container" *ngIf="!isLoading && products.length === 0">
         <app-empty-state
-          heading="No Products Available"
-          description="There are no published products in the catalog right now.">
+          heading="No Matching Products"
+          description="Try a different search term, category, or price range.">
         </app-empty-state>
       </div>
 
-      <div class="empty-container" *ngIf="!isLoading && products.length > 0 && filteredProducts.length === 0">
-        <app-empty-state
-          heading="No Matching Products"
-          description="Try a different search term, price range, or availability filter.">
-        </app-empty-state>
-      </div>
+      <app-pagination [page]="page" [totalPages]="totalPages" [totalElements]="totalElements" (pageChange)="onPageChange($event)"></app-pagination>
     </section>
   </div>
 </div>

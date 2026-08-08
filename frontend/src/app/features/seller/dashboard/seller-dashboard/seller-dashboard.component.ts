@@ -5,12 +5,15 @@ import { LucideAngularModule, Trash2 } from 'lucide-angular';
 import { catchError, forkJoin, of } from 'rxjs';
 import { ProductService } from '../../../../core/services/product.service';
 import { MediaService } from '../../../../core/services/media.service';
+import { OrderService } from '../../../../core/services/order.service';
 import { Product } from '../../../../core/models/product.model';
 import { MediaItem } from '../../../../core/models/media.model';
+import { SellerAnalytics } from '../../../../core/models/order.model';
 import { ToastService } from '../../../../core/services/toast.service';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { SellerPortalShellComponent } from '../../../../shared/components/seller-portal-shell/seller-portal-shell.component';
+import { BarChartComponent, BarChartDatum } from '../../../../shared/components/bar-chart/bar-chart.component';
 
 @Component({
   selector: 'app-seller-dashboard',
@@ -21,7 +24,8 @@ import { SellerPortalShellComponent } from '../../../../shared/components/seller
     LucideAngularModule,
     LoadingSpinnerComponent,
     ConfirmDialogComponent,
-    SellerPortalShellComponent
+    SellerPortalShellComponent,
+    BarChartComponent
   ],
   templateUrl: './seller-dashboard.component.html',
   styleUrl: './seller-dashboard.component.scss'
@@ -29,10 +33,12 @@ import { SellerPortalShellComponent } from '../../../../shared/components/seller
 export class SellerDashboardComponent implements OnInit {
   productService = inject(ProductService);
   mediaService = inject(MediaService);
+  orderService = inject(OrderService);
   toastService = inject(ToastService);
 
   products: Product[] = [];
   mediaItems: MediaItem[] = [];
+  analytics: SellerAnalytics | null = null;
   isLoading = true;
   isDeleteConfirmOpen = false;
   productToDelete: Product | null = null;
@@ -51,14 +57,22 @@ export class SellerDashboardComponent implements OnInit {
           this.toastService.show(err.error?.message || 'Failed to load media metrics', 'error');
           return of([] as MediaItem[]);
         })
+      ),
+      analytics: this.orderService.getSellerAnalytics().pipe(
+        catchError(() => of(null))
       )
     }).subscribe({
-      next: ({ products, mediaItems }) => {
+      next: ({ products, mediaItems, analytics }) => {
         this.products = products;
         this.mediaItems = mediaItems;
+        this.analytics = analytics;
         this.isLoading = false;
       }
     });
+  }
+
+  get bestSellingChartData(): BarChartDatum[] {
+    return (this.analytics?.bestSellingProducts ?? []).map((stat) => ({ label: stat.name, value: stat.unitsSold }));
   }
 
   get activeListingsCount(): number {

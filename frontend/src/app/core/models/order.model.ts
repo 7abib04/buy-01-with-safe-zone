@@ -48,3 +48,29 @@ export interface OrderPage {
   totalElements: number;
   totalPages: number;
 }
+
+export interface ProductStat {
+  productId: string;
+  name: string;
+  unitsSold: number;
+  revenue: number;
+}
+
+export interface CategoryStat {
+  category: string;
+  amount: number;
+}
+
+export interface BuyerAnalytics {
+  totalSpent: number;
+  ordersCount: number;
+  mostBoughtProducts: ProductStat[];
+  topCategories: CategoryStat[];
+}
+
+export interface SellerAnalytics {
+  totalRevenue: number;
+  unitsSold: number;
+  ordersCount: number;
+  bestSellingProducts: ProductStat[];
+}

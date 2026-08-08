@@ -10,6 +10,7 @@ import { MediaService } from '../../../../core/services/media.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { MediaUploadComplete } from '../../../../core/models/media.model';
+import { ProductCategory } from '../../../../core/models/product.model';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
@@ -74,12 +75,17 @@ export class ProductFormComponent implements OnInit {
     });
   }
 
+  readonly categoryOptions: ProductCategory[] = [
+    'ELECTRONICS', 'CLOTHING', 'HOME', 'BEAUTY', 'SPORTS', 'TOYS', 'BOOKS', 'GROCERY', 'OTHER'
+  ];
+
   initForm(): void {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(this.maxProductNameLength)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       price: [null, [Validators.required, Validators.min(0.01)]],
-      quantity: [1, [Validators.required, Validators.min(0)]]
+      quantity: [1, [Validators.required, Validators.min(0)]],
+      category: ['OTHER', [Validators.required]]
     });
   }
 
@@ -99,7 +105,8 @@ export class ProductFormComponent implements OnInit {
           name: product.name,
           description: product.description,
           price: product.price,
-          quantity: product.quantity
+          quantity: product.quantity,
+          category: product.category ?? 'OTHER'
         });
         if (product.imageUrls) {
           this.uploadedImages = [...product.imageUrls];

@@ -55,6 +55,42 @@
           </button>
         </div>
       </form>
+
+      <section class="activity-section">
+        <div class="content-heading">
+          <span class="section-kicker">My Activity</span>
+          <h2>Buying summary</h2>
+          <p>What you've spent and bought across all your orders.</p>
+        </div>
+
+        <ng-container *ngIf="!isLoadingAnalytics && analytics; else activityLoading">
+          <div class="activity-stats">
+            <article class="support-card">
+              <span class="field-chip">Total spent</span>
+              <strong>{{ analytics.totalSpent | currency:'USD':'symbol':'1.0-2' }}</strong>
+            </article>
+            <article class="support-card">
+              <span class="field-chip">Orders placed</span>
+              <strong>{{ analytics.ordersCount }}</strong>
+            </article>
+          </div>
+
+          <div class="activity-charts">
+            <div class="chart-card">
+              <span class="section-kicker">Most bought products</span>
+              <app-bar-chart [data]="mostBoughtChartData" valueSuffix=" units" emptyMessage="No purchases yet."></app-bar-chart>
+            </div>
+            <div class="chart-card">
+              <span class="section-kicker">Top categories</span>
+              <app-bar-chart [data]="topCategoriesChartData" valuePrefix="$" emptyMessage="No purchases yet."></app-bar-chart>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #activityLoading>
+          <p class="loading-copy" *ngIf="isLoadingAnalytics">Loading your activity&hellip;</p>
+        </ng-template>
+      </section>
     </main>
   </div>
 </div>

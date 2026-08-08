@@ -6,18 +6,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { OrderService } from '../../core/services/order.service';
 import { User } from '../../core/models/user.model';
+import { BuyerAnalytics } from '../../core/models/order.model';
+import { BarChartComponent, BarChartDatum } from '../../shared/components/bar-chart/bar-chart.component';
 
 @Component({
   selector: 'app-buyer-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, BarChartComponent],
   templateUrl: './buyer-profile.component.html',
   styleUrl: './buyer-profile.component.scss'
 })
 export class BuyerProfileComponent implements OnInit {
   authService = inject(AuthService);
   toastService = inject(ToastService);
+  orderService = inject(OrderService);
   fb = inject(FormBuilder);
   router = inject(Router);
   destroyRef = inject(DestroyRef);
@@ -25,6 +29,9 @@ export class BuyerProfileComponent implements OnInit {
   profileForm!: FormGroup;
   user: User | null = null;
   isSubmitting = false;
+
+  analytics: BuyerAnalytics | null = null;
+  isLoadingAnalytics = true;
 
   ngOnInit() {
     this.profileForm = this.fb.group({
@@ -43,6 +50,29 @@ export class BuyerProfileComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((user) => this.applyUser(user));
+
+    this.loadAnalytics();
+  }
+
+  loadAnalytics(): void {
+    this.isLoadingAnalytics = true;
+    this.orderService.getBuyerAnalytics().subscribe({
+      next: (analytics) => {
+        this.analytics = analytics;
+        this.isLoadingAnalytics = false;
+      },
+      error: () => {
+        this.isLoadingAnalytics = false;
+      }
+    });
+  }
+
+  get mostBoughtChartData(): BarChartDatum[] {
+    return (this.analytics?.mostBoughtProducts ?? []).map((stat) => ({ label: stat.name, value: stat.unitsSold }));
+  }
+
+  get topCategoriesChartData(): BarChartDatum[] {
+    return (this.analytics?.topCategories ?? []).map((stat) => ({ label: stat.category, value: stat.amount }));
   }
 
   onSubmit() {

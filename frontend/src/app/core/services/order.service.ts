@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Order, OrderPage, OrderStatus, ShippingAddress } from '../models/order.model';
+import { BuyerAnalytics, Order, OrderPage, OrderStatus, SellerAnalytics, ShippingAddress } from '../models/order.model';
 import { Cart } from '../models/cart.model';
 import { environment } from '../../../environments/environment';
 
@@ -51,6 +51,14 @@ export class OrderService {
 
   updateOrderStatus(id: string, status: OrderStatus): Observable<Order> {
     return this.http.patch<Order>(`${this.apiUrl}/orders/${id}/status`, { status });
+  }
+
+  getBuyerAnalytics(): Observable<BuyerAnalytics> {
+    return this.http.get<BuyerAnalytics>(`${this.apiUrl}/orders/analytics/me`);
+  }
+
+  getSellerAnalytics(): Observable<SellerAnalytics> {
+    return this.http.get<SellerAnalytics>(`${this.apiUrl}/orders/analytics/seller`);
   }
 
   private toHttpParams(params: OrderSearchParams): HttpParams {
