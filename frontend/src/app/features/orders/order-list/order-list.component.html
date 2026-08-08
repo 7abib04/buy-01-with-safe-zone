@@ -1,0 +1,47 @@
+<div class="page-container orders-page">
+  <header class="page-header">
+    <span class="section-kicker">Order History</span>
+    <h1>Your Orders</h1>
+  </header>
+
+  <div class="filters glass">
+    <form class="search-form" (ngSubmit)="onSearchSubmit()">
+      <input type="text" [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search by order ID or product name">
+      <button type="submit" class="btn-primary">Search</button>
+    </form>
+
+    <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange()" name="statusFilter">
+      <option value="">All statuses</option>
+      <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+    </select>
+  </div>
+
+  <div class="loading-list" *ngIf="isLoading">
+    <app-skeleton *ngFor="let _ of skeletonArray" type="text"></app-skeleton>
+  </div>
+
+  <app-empty-state
+    *ngIf="!isLoading && orders.length === 0"
+    [icon]="PackageSearchIcon"
+    heading="No orders found"
+    description="Orders you place will show up here.">
+  </app-empty-state>
+
+  <div class="order-cards" *ngIf="!isLoading && orders.length > 0">
+    <a class="order-card glass" *ngFor="let order of orders; trackBy: trackByOrderId" [routerLink]="['/orders', order.id]">
+      <div class="order-card-main">
+        <strong>Order #{{ order.id | slice:0:8 }}</strong>
+        <span>{{ order.createdAt | date:'mediumDate' }} &middot; {{ order.items.length }} item(s)</span>
+      </div>
+      <span class="status-pill"
+        [class.available]="order.status === 'DELIVERED'"
+        [class.warning]="order.status === 'PENDING' || order.status === 'CONFIRMED' || order.status === 'SHIPPED'"
+        [class.out]="order.status === 'CANCELLED'">
+        {{ order.status }}
+      </span>
+      <strong class="order-total">{{ order.totalAmount | currency:'USD':'symbol':'1.0-2' }}</strong>
+    </a>
+  </div>
+
+  <app-pagination [page]="page" [totalPages]="totalPages" [totalElements]="totalElements" (pageChange)="onPageChange($event)"></app-pagination>
+</div>

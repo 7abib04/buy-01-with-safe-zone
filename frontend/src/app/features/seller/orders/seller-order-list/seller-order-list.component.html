@@ -1,0 +1,89 @@
+<div class="page-container">
+  <app-seller-portal-shell
+    kicker="Fulfillment"
+    title="Orders"
+    description="Track and fulfill orders that include your products.">
+
+    <section class="stats-grid" *ngIf="!isLoading">
+      <article class="stat-card glass">
+        <span>Orders on this page</span>
+        <strong>{{ orders.length }}</strong>
+      </article>
+      <article class="stat-card glass">
+        <span>Awaiting confirmation</span>
+        <strong>{{ pendingCount }}</strong>
+      </article>
+      <article class="stat-card glass">
+        <span>Revenue on this page</span>
+        <strong>{{ revenueThisPage | currency:'USD':'symbol':'1.0-2' }}</strong>
+      </article>
+    </section>
+
+    <div class="filters glass">
+      <form class="search-form" (ngSubmit)="onSearchSubmit()">
+        <input type="text" [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search by order ID or product name">
+        <button type="submit" class="btn-primary">Search</button>
+      </form>
+
+      <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange()" name="statusFilter">
+        <option value="">All statuses</option>
+        <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+      </select>
+    </div>
+
+    <section class="orders-card glass">
+      <div class="loading-state" *ngIf="isLoading">
+        <div class="skeleton-row" *ngFor="let _ of skeletonArray">
+          <app-skeleton type="text"></app-skeleton>
+          <app-skeleton type="text"></app-skeleton>
+        </div>
+      </div>
+
+      <app-empty-state
+        *ngIf="!isLoading && orders.length === 0"
+        heading="No orders yet"
+        description="Orders containing your products will show up here.">
+      </app-empty-state>
+
+      <div class="table-shell" *ngIf="!isLoading && orders.length > 0">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Buyer</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Placed</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orders; trackBy: trackByOrderId">
+                <td>#{{ order.id | slice:0:8 }}</td>
+                <td>{{ order.buyerName }}</td>
+                <td>{{ order.items.length }}</td>
+                <td>{{ order.totalAmount | currency:'USD':'symbol':'1.0-2' }}</td>
+                <td>
+                  <span class="status-pill"
+                    [class.available]="order.status === 'DELIVERED'"
+                    [class.warning]="order.status === 'PENDING' || order.status === 'CONFIRMED' || order.status === 'SHIPPED'"
+                    [class.out]="order.status === 'CANCELLED'">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td>{{ order.createdAt | date:'MMM dd, yyyy' }}</td>
+                <td class="actions-col text-right">
+                  <a [routerLink]="['/seller/orders', order.id]" class="table-action">Manage</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <app-pagination [page]="page" [totalPages]="totalPages" [totalElements]="totalElements" (pageChange)="onPageChange($event)"></app-pagination>
+    </section>
+  </app-seller-portal-shell>
+</div>

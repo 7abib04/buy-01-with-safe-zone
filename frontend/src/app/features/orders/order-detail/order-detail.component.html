@@ -1,0 +1,95 @@
+<div class="page-container order-detail-page">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="glass state-card" *ngIf="!isLoading && isNotFound">
+    <h2>Order not found</h2>
+    <p>This order does not exist or you don't have access to it.</p>
+    <a routerLink="/orders" class="btn-primary">Back to orders</a>
+  </div>
+
+  <ng-container *ngIf="!isLoading && order">
+    <a routerLink="/orders" class="back-link">Back to orders</a>
+
+    <header class="page-header">
+      <span class="section-kicker">Order #{{ order.id | slice:0:8 }}</span>
+      <h1>Placed {{ order.createdAt | date:'mediumDate' }}</h1>
+    </header>
+
+    <section class="timeline glass" *ngIf="order.status !== 'CANCELLED'">
+      <div class="timeline-step" *ngFor="let status of timeline" [class]="timelineState(status)">
+        <span class="timeline-dot"></span>
+        <span class="timeline-label">{{ status }}</span>
+      </div>
+    </section>
+
+    <section class="timeline glass cancelled" *ngIf="order.status === 'CANCELLED'">
+      <span class="status-pill out">CANCELLED</span>
+    </section>
+
+    <div class="detail-layout">
+      <section class="order-items glass">
+        <span class="section-kicker">Items</span>
+        <article class="order-item" *ngFor="let item of order.items">
+          <div class="item-image">
+            <app-media-image [src]="item.imageUrl || null" [alt]="item.name" [fallbackIconSize]="28"></app-media-image>
+          </div>
+          <div class="item-info">
+            <strong>{{ item.name }}</strong>
+            <span>{{ item.quantity }} &times; {{ item.price | currency:'USD':'symbol':'1.0-2' }}</span>
+          </div>
+          <strong class="item-subtotal">{{ item.subtotal | currency:'USD':'symbol':'1.0-2' }}</strong>
+        </article>
+
+        <div class="order-total-row">
+          <span>Total</span>
+          <strong>{{ order.totalAmount | currency:'USD':'symbol':'1.0-2' }}</strong>
+        </div>
+      </section>
+
+      <aside class="order-sidebar">
+        <div class="address-card glass">
+          <span class="section-kicker">Shipping Address</span>
+          <strong>{{ order.shippingAddress.fullName }}</strong>
+          <p>{{ order.shippingAddress.line1 }}</p>
+          <p>{{ order.shippingAddress.city }}, {{ order.shippingAddress.postalCode }}, {{ order.shippingAddress.country }}</p>
+          <p>{{ order.shippingAddress.phone }}</p>
+          <span class="field-chip">Pay on Delivery</span>
+        </div>
+
+        <div class="order-actions glass" *ngIf="canCancel || canRedo || canRemove">
+          <button *ngIf="canCancel" type="button" class="btn-danger full-width" [disabled]="isCancelling" (click)="isCancelConfirmOpen = true">
+            <span *ngIf="!isCancelling">Cancel order</span>
+            <span *ngIf="isCancelling" class="spinner-inline"></span>
+          </button>
+          <button *ngIf="canRedo" type="button" class="btn-primary full-width" [disabled]="isRedoing" (click)="redoOrder()">
+            <span *ngIf="!isRedoing">Buy again</span>
+            <span *ngIf="isRedoing" class="spinner-inline"></span>
+          </button>
+          <button *ngIf="canRemove" type="button" class="btn-ghost full-width" [disabled]="isRemoving" (click)="isRemoveConfirmOpen = true">
+            Remove from history
+          </button>
+        </div>
+      </aside>
+    </div>
+  </ng-container>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isCancelConfirmOpen"
+  title="Cancel this order?"
+  message="This restores the stock and cannot be undone."
+  confirmText="Cancel order"
+  cancelText="Keep order"
+  (confirm)="cancelOrder(); isCancelConfirmOpen = false"
+  (cancel)="isCancelConfirmOpen = false">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  [isOpen]="isRemoveConfirmOpen"
+  title="Remove this order?"
+  message="This only hides it from your order history."
+  confirmText="Remove"
+  cancelText="Keep"
+  (confirm)="removeOrder(); isRemoveConfirmOpen = false"
+  (cancel)="isRemoveConfirmOpen = false">
+</app-confirm-dialog>

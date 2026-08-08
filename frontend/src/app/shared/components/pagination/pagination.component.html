@@ -1,0 +1,11 @@
+<nav class="pagination" *ngIf="totalPages > 1" aria-label="Pagination">
+  <button type="button" class="page-btn" (click)="previous()" [disabled]="!hasPrevious" aria-label="Previous page">
+    <lucide-icon [img]="ChevronLeftIcon" size="16"></lucide-icon>
+  </button>
+
+  <span class="page-status">Page {{ page + 1 }} of {{ totalPages }}</span>
+
+  <button type="button" class="page-btn" (click)="next()" [disabled]="!hasNext" aria-label="Next page">
+    <lucide-icon [img]="ChevronRightIcon" size="16"></lucide-icon>
+  </button>
+</nav>

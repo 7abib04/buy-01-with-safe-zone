@@ -9,7 +9,9 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <a routerLink="/products" routerLinkActive="active">Collections</a>
       <a *ngIf="authService.isSeller()" routerLink="/seller/dashboard" routerLinkActive="active">Studio</a>
+      <a *ngIf="authService.isSeller()" routerLink="/seller/orders" routerLinkActive="active">Orders</a>
       <a *ngIf="authService.isSeller()" routerLink="/seller/media" routerLinkActive="active">Media</a>
+      <a *ngIf="!authService.isSeller() && (currentUser$ | async)" routerLink="/orders" routerLinkActive="active">Orders</a>
       <a *ngIf="authService.isBuyer()" routerLink="/profile" routerLinkActive="active">Account</a>
     </div>
 

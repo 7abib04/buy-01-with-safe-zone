@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import {
+  ClipboardList,
   LayoutDashboard,
   Images,
   LogOut,
@@ -34,6 +35,7 @@ export class SellerPortalShellComponent {
 
   readonly LayoutDashboardIcon = LayoutDashboard;
   readonly PackageIcon = Package;
+  readonly ClipboardListIcon = ClipboardList;
   readonly ImagesIcon = Images;
   readonly SettingsIcon = Settings;
   readonly StoreIcon = Store;

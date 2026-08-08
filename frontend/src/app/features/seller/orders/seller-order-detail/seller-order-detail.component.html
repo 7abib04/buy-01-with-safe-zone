@@ -1,0 +1,73 @@
+<div class="page-container">
+  <app-seller-portal-shell kicker="Fulfillment" title="Order detail" description="Review the order and move it forward when it's ready.">
+    <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+    <div class="glass state-card" *ngIf="!isLoading && isNotFound">
+      <h2>Order not found</h2>
+      <p>This order does not exist or isn't linked to your products.</p>
+      <a routerLink="/seller/orders" class="btn-primary">Back to orders</a>
+    </div>
+
+    <ng-container *ngIf="!isLoading && order">
+      <a routerLink="/seller/orders" class="back-link">Back to orders</a>
+
+      <div class="detail-layout">
+        <section class="order-items glass">
+          <div class="order-heading">
+            <div>
+              <span class="section-kicker">Order #{{ order.id | slice:0:8 }}</span>
+              <h2>{{ order.buyerName }}</h2>
+            </div>
+            <span class="status-pill"
+              [class.available]="order.status === 'DELIVERED'"
+              [class.warning]="order.status === 'PENDING' || order.status === 'CONFIRMED' || order.status === 'SHIPPED'"
+              [class.out]="order.status === 'CANCELLED'">
+              {{ order.status }}
+            </span>
+          </div>
+
+          <article class="order-item" *ngFor="let item of order.items">
+            <div class="item-image">
+              <app-media-image [src]="item.imageUrl || null" [alt]="item.name" [fallbackIconSize]="28"></app-media-image>
+            </div>
+            <div class="item-info">
+              <strong>{{ item.name }}</strong>
+              <span>{{ item.quantity }} &times; {{ item.price | currency:'USD':'symbol':'1.0-2' }}</span>
+            </div>
+            <strong class="item-subtotal">{{ item.subtotal | currency:'USD':'symbol':'1.0-2' }}</strong>
+          </article>
+
+          <div class="order-total-row">
+            <span>Your total for this order</span>
+            <strong>{{ order.totalAmount | currency:'USD':'symbol':'1.0-2' }}</strong>
+          </div>
+        </section>
+
+        <aside class="order-sidebar">
+          <div class="address-card glass">
+            <span class="section-kicker">Ship to</span>
+            <strong>{{ order.shippingAddress.fullName }}</strong>
+            <p>{{ order.shippingAddress.line1 }}</p>
+            <p>{{ order.shippingAddress.city }}, {{ order.shippingAddress.postalCode }}, {{ order.shippingAddress.country }}</p>
+            <p>{{ order.shippingAddress.phone }}</p>
+          </div>
+
+          <div class="status-card glass" *ngIf="order.status !== 'CANCELLED'">
+            <span class="section-kicker">Fulfillment</span>
+            <p *ngIf="nextStatus">Move this order forward once it's ready.</p>
+            <p *ngIf="!nextStatus">This order is fully delivered.</p>
+            <button
+              *ngIf="nextStatus"
+              type="button"
+              class="btn-primary full-width"
+              [disabled]="isUpdatingStatus"
+              (click)="advanceStatus()">
+              <span *ngIf="!isUpdatingStatus">Mark as {{ nextStatus }}</span>
+              <span *ngIf="isUpdatingStatus" class="spinner-inline"></span>
+            </button>
+          </div>
+        </aside>
+      </div>
+    </ng-container>
+  </app-seller-portal-shell>
+</div>

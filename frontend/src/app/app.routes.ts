@@ -52,6 +52,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
   },
 
+  // Orders (any authenticated role)
+  {
+    path: 'orders',
+    canActivate: [authGuard],
+    children: [
+      { path: '', loadComponent: () => import('./features/orders/order-list/order-list.component').then(m => m.OrderListComponent) },
+      { path: ':id', loadComponent: () => import('./features/orders/order-detail/order-detail.component').then(m => m.OrderDetailComponent) }
+    ]
+  },
+
   // Seller Routes (SELLER)
   { 
     path: 'seller',
@@ -62,6 +72,8 @@ export const routes: Routes = [
       { path: 'products', loadComponent: () => import('./features/seller/products/seller-products/seller-products.component').then(m => m.SellerProductsComponent) },
       { path: 'products/new', loadComponent: () => import('./features/seller/products/product-form/product-form.component').then(m => m.ProductFormComponent) },
       { path: 'products/:id/edit', loadComponent: () => import('./features/seller/products/product-form/product-form.component').then(m => m.ProductFormComponent) },
+      { path: 'orders', loadComponent: () => import('./features/seller/orders/seller-order-list/seller-order-list.component').then(m => m.SellerOrderListComponent) },
+      { path: 'orders/:id', loadComponent: () => import('./features/seller/orders/seller-order-detail/seller-order-detail.component').then(m => m.SellerOrderDetailComponent) },
       { path: 'media', loadComponent: () => import('./features/seller/media/seller-media/seller-media.component').then(m => m.SellerMediaComponent) },
       { path: 'profile', loadComponent: () => import('./features/seller/profile/seller-profile/seller-profile.component').then(m => m.SellerProfileComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
