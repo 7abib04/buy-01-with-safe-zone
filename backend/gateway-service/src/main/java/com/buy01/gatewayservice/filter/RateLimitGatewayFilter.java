@@ -1,8 +1,11 @@
 package com.buy01.gatewayservice.filter;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,8 +35,7 @@ public class RateLimitGatewayFilter implements WebFilter, Ordered {
             @Value("${app.rate-limit.auth.max-requests}") int authMaxRequests,
             @Value("${app.rate-limit.auth.window-seconds}") long authWindowSeconds,
             @Value("${app.rate-limit.media-write.max-requests}") int mediaWriteMaxRequests,
-            @Value("${app.rate-limit.media-write.window-seconds}") long mediaWriteWindowSeconds
-    ) {
+            @Value("${app.rate-limit.media-write.window-seconds}") long mediaWriteWindowSeconds) {
         this.authMaxRequests = authMaxRequests;
         this.authWindow = Duration.ofSeconds(authWindowSeconds);
         this.mediaWriteMaxRequests = mediaWriteMaxRequests;
@@ -89,7 +91,10 @@ public class RateLimitGatewayFilter implements WebFilter, Ordered {
         }
 
         if (exchange.getRequest().getRemoteAddress() != null) {
-            return exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+            return Optional.ofNullable(exchange.getRequest().getRemoteAddress())
+                    .map(InetSocketAddress::getAddress)
+                    .map(InetAddress::getHostAddress)
+                    .orElse("unknown"); 
         }
 
         return "unknown";

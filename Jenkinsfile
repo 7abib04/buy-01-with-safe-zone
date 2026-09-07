@@ -244,7 +244,7 @@ pipeline {
 
     environment {
         APP_DIR = 'source'
-        GIT_URL = 'https://github.com/7abib04/buy-02.git'
+        GIT_URL = 'https://github.com/7abib04/buy-01-with-safe-zone'
         GIT_CREDENTIALS_ID = '' // public repo, anonymous HTTPS clone — set a credential ID here if it's ever made private
         DEPLOYMENT_STARTED = 'false'
         ROLLBACK_RESULT = 'NOT_ATTEMPTED'
