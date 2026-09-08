@@ -23,6 +23,7 @@
         <module>user-service</module>
         <module>product-service</module>
         <module>media-service</module>
+        <module>security-common</module>
         <module>order-service</module>
     </modules>
 

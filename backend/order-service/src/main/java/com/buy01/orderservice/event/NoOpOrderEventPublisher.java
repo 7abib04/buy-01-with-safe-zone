@@ -10,13 +10,16 @@ public class NoOpOrderEventPublisher implements OrderEventPublisher {
 
     @Override
     public void publishCreated(Order order) {
+        // Intentional no-op: event publishing is disabled (app.kafka.enabled=false).
     }
 
     @Override
     public void publishStatusChanged(Order order) {
+        // Intentional no-op: event publishing is disabled (app.kafka.enabled=false).
     }
 
     @Override
     public void publishCancelled(Order order) {
+        // Intentional no-op: event publishing is disabled (app.kafka.enabled=false).
     }
 }

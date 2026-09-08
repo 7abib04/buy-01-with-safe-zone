@@ -26,9 +26,9 @@ import { MediaImageComponent } from '../../shared/components/media-image/media-i
   styleUrl: './cart.component.scss'
 })
 export class CartComponent implements OnInit {
-  private cartService = inject(CartService);
-  private toastService = inject(ToastService);
-  private router = inject(Router);
+  private readonly cartService = inject(CartService);
+  private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
 
   readonly MinusIcon = Minus;
   readonly PlusIcon = Plus;

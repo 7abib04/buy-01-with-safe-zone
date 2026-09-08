@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProductSearchService {
 
+    private static final String FIELD_PRICE = "price";
+
     private final MongoTemplate mongoTemplate;
     private final ProductRepository productRepository;
 
@@ -74,10 +76,10 @@ public class ProductSearchService {
             criteria.add(Criteria.where("category").is(category));
         }
         if (minPrice != null) {
-            criteria.add(Criteria.where("price").gte(minPrice));
+            criteria.add(Criteria.where(FIELD_PRICE).gte(minPrice));
         }
         if (maxPrice != null) {
-            criteria.add(Criteria.where("price").lte(maxPrice));
+            criteria.add(Criteria.where(FIELD_PRICE).lte(maxPrice));
         }
 
         Query query = new Query();
@@ -89,8 +91,8 @@ public class ProductSearchService {
 
     private Sort resolveSort(String sort) {
         return switch (sort == null ? "newest" : sort) {
-            case "price_asc" -> Sort.by(Sort.Direction.ASC, "price");
-            case "price_desc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "price_asc" -> Sort.by(Sort.Direction.ASC, FIELD_PRICE);
+            case "price_desc" -> Sort.by(Sort.Direction.DESC, FIELD_PRICE);
             case "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
             default -> Sort.by(Sort.Direction.DESC, "createdAt");
         };

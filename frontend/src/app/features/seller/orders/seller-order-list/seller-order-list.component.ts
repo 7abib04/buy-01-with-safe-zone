@@ -26,11 +26,11 @@ import { SellerPortalShellComponent } from '../../../../shared/components/seller
   styleUrl: './seller-order-list.component.scss'
 })
 export class SellerOrderListComponent implements OnInit {
-  private orderService = inject(OrderService);
-  private toastService = inject(ToastService);
+  private readonly orderService = inject(OrderService);
+  private readonly toastService = inject(ToastService);
 
   readonly statusOptions: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
-  readonly skeletonArray = Array(5).fill(0);
+  readonly skeletonArray = new Array(5).fill(0);
 
   orders: Order[] = [];
   isLoading = true;

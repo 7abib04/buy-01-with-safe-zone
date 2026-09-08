@@ -1,7 +1,5 @@
-package com.buy01.orderservice.config;
+package com.buy01.security;
 
-import com.buy01.orderservice.security.AuthenticatedUser;
-import com.buy01.orderservice.service.JwtService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
