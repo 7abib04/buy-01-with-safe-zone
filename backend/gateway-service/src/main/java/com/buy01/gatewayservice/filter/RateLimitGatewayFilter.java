@@ -75,7 +75,7 @@ public class RateLimitGatewayFilter implements WebFilter, Ordered {
         if (method == HttpMethod.POST && ("/auth/register".equals(path) || "/auth/login".equals(path))) {
             return new RateLimitPolicy("auth", authMaxRequests, authWindow);
         }
-        
+
 
         if ((method == HttpMethod.POST && "/media/images".equals(path))
                 || (method == HttpMethod.DELETE && path.matches("^/media/images/[^/]+$"))) {
@@ -99,6 +99,7 @@ public class RateLimitGatewayFilter implements WebFilter, Ordered {
         }
 
         return "unknown";
+        //dd
     }
 
     private Mono<Void> writeTooManyRequests(ServerWebExchange exchange, String policyName) {
