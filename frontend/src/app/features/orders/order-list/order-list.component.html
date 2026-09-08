@@ -6,11 +6,13 @@
 
   <div class="filters glass">
     <form class="search-form" (ngSubmit)="onSearchSubmit()">
-      <input type="text" [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search by order ID or product name">
+      <label class="visually-hidden" for="order-search">Search by order ID or product name</label>
+      <input id="order-search" type="text" [(ngModel)]="searchTerm" name="searchTerm" placeholder="Search by order ID or product name">
       <button type="submit" class="btn-primary">Search</button>
     </form>
 
-    <select [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange()" name="statusFilter">
+    <label class="visually-hidden" for="order-status-filter">Filter by status</label>
+    <select id="order-status-filter" [(ngModel)]="statusFilter" (ngModelChange)="onStatusChange()" name="statusFilter">
       <option value="">All statuses</option>
       <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
     </select>

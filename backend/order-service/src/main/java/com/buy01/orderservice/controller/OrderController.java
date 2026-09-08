@@ -8,7 +8,7 @@ import com.buy01.orderservice.dto.OrderStatusUpdateRequest;
 import com.buy01.orderservice.dto.PageResponse;
 import com.buy01.orderservice.dto.SellerAnalyticsResponse;
 import com.buy01.orderservice.model.OrderStatus;
-import com.buy01.orderservice.security.AuthenticatedUser;
+import com.buy01.security.AuthenticatedUser;
 import com.buy01.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import java.time.Instant;

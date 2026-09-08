@@ -31,7 +31,7 @@ import com.buy01.orderservice.model.ShippingAddress;
 import com.buy01.orderservice.model.StatusChange;
 import com.buy01.orderservice.repository.CartRepository;
 import com.buy01.orderservice.repository.OrderRepository;
-import com.buy01.orderservice.security.AuthenticatedUser;
+import com.buy01.security.AuthenticatedUser;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -39,7 +39,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 

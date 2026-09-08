@@ -1,40 +1,15 @@
 package com.buy01.orderservice.model;
 
 import java.math.BigDecimal;
-import org.springframework.data.mongodb.core.index.Indexed;
 
-public class OrderItem {
-
-    private String productId;
-
-    @Indexed
-    private String sellerId;
+public class OrderItem extends AbstractLineItem {
 
     private String sellerName;
-    private String name;
-    private String imageUrl;
-    private BigDecimal price;
-    private int quantity;
     private String category;
     private BigDecimal subtotal;
 
     public OrderItem() {
-    }
-
-    public String getProductId() {
-        return productId;
-    }
-
-    public void setProductId(String productId) {
-        this.productId = productId;
-    }
-
-    public String getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
+        // Required no-arg constructor for MongoDB/Jackson deserialization.
     }
 
     public String getSellerName() {
@@ -43,38 +18,6 @@ public class OrderItem {
 
     public void setSellerName(String sellerName) {
         this.sellerName = sellerName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
     }
 
     public String getCategory() {

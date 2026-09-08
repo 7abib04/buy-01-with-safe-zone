@@ -18,12 +18,12 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
   styleUrl: './order-list.component.scss'
 })
 export class OrderListComponent implements OnInit {
-  private orderService = inject(OrderService);
-  private toastService = inject(ToastService);
+  private readonly orderService = inject(OrderService);
+  private readonly toastService = inject(ToastService);
 
   readonly PackageSearchIcon = PackageSearch;
   readonly statusOptions: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
-  readonly skeletonArray = Array(4).fill(0);
+  readonly skeletonArray = new Array(4).fill(0);
 
   orders: Order[] = [];
   isLoading = true;

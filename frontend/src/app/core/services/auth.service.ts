@@ -30,7 +30,7 @@ export interface AuthResponse {
 export class AuthService {
   private http = inject(HttpClient);
   private productService = inject(ProductService);
-  private cartService = inject(CartService);
+  private readonly cartService = inject(CartService);
   private apiUrl = environment.apiUrl;
   
   private currentUserSubject = new BehaviorSubject<User | null>(null);

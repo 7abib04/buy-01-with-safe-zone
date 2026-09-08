@@ -73,7 +73,7 @@ public class ProductServiceClient {
 
     private String extractMessage(RestClientResponseException exception, String fallback) {
         String responseBody = exception.getResponseBodyAsString();
-        if (responseBody == null || responseBody.isBlank()) {
+        if (responseBody.isBlank()) {
             return fallback;
         }
         try {
@@ -83,6 +83,7 @@ public class ProductServiceClient {
                 return message.asText();
             }
         } catch (Exception ignored) {
+            // Not valid JSON (or no "message" field) - fall back to the raw response body below.
         }
         return responseBody;
     }

@@ -23,7 +23,7 @@ describe('ProductService', () => {
     service
       .searchProducts({ q: 'phone', category: 'ELECTRONICS', minPrice: 10, maxPrice: 500, sort: 'price_asc', page: 1, size: 12 })
       .subscribe((result) => {
-        expect(result.content.length).toBe(1);
+        expect(result.content).toHaveSize(1);
         expect(result.content[0].category).toBe('ELECTRONICS');
         expect(result.categories).toEqual(['ELECTRONICS', 'OTHER']);
       });
@@ -55,7 +55,7 @@ describe('ProductService', () => {
     service.searchProducts().subscribe();
 
     const req = httpMock.expectOne('/api/products/search');
-    expect(req.request.params.keys().length).toBe(0);
+    expect(req.request.params.keys()).toHaveSize(0);
     req.flush({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0, categories: [], minPrice: 0, maxPrice: 0 });
   });
 });

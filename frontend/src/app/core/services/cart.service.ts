@@ -10,10 +10,10 @@ const EMPTY_CART: Cart = { items: [], totalItems: 0, totalAmount: 0 };
   providedIn: 'root'
 })
 export class CartService {
-  private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl;
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
-  private cartSubject = new BehaviorSubject<Cart>(EMPTY_CART);
+  private readonly cartSubject = new BehaviorSubject<Cart>(EMPTY_CART);
   public cart$ = this.cartSubject.asObservable();
   public itemCount$ = this.cart$.pipe(map((cart) => cart.totalItems));
 

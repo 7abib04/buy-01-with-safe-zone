@@ -25,6 +25,10 @@ export class BarChartComponent {
   }
 
   barWidth(value: number): number {
-    return this.maxValue === 0 ? 0 : Math.max((value / this.maxValue) * 100, value > 0 ? 4 : 0);
+    if (this.maxValue === 0) {
+      return 0;
+    }
+    const minVisibleWidth = value > 0 ? 4 : 0;
+    return Math.max((value / this.maxValue) * 100, minVisibleWidth);
   }
 }

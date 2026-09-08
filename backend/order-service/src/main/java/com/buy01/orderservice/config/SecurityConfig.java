@@ -1,5 +1,6 @@
 package com.buy01.orderservice.config;
 
+import com.buy01.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -21,6 +22,9 @@ public class SecurityConfig {
     }
 
     @Bean
+    @SuppressWarnings("java:S4502") // CSRF protection targets cookie-based sessions; this API is stateless
+    // and authenticates every request with a JWT bearer token (see JwtAuthenticationFilter), so there is no
+    // session cookie for a cross-site request to ride on.
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())

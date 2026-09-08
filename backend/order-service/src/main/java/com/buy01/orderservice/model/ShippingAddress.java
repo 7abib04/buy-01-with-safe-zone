@@ -10,6 +10,7 @@ public class ShippingAddress {
     private String country;
 
     public ShippingAddress() {
+        // Required no-arg constructor for MongoDB/Jackson deserialization.
     }
 
     public String getFullName() {

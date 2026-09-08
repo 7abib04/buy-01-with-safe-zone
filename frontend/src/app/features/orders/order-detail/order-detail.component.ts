@@ -19,11 +19,11 @@ const STATUS_TIMELINE: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELI
   styleUrl: './order-detail.component.scss'
 })
 export class OrderDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private orderService = inject(OrderService);
-  private authService = inject(AuthService);
-  private toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly orderService = inject(OrderService);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   readonly timeline = STATUS_TIMELINE;
 

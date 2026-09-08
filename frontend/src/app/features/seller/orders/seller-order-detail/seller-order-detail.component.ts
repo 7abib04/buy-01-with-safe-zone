@@ -18,9 +18,9 @@ const FORWARD_SEQUENCE: OrderStatus[] = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DEL
   styleUrl: './seller-order-detail.component.scss'
 })
 export class SellerOrderDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private orderService = inject(OrderService);
-  private toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly orderService = inject(OrderService);
+  private readonly toastService = inject(ToastService);
 
   order: Order | null = null;
   isLoading = true;

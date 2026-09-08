@@ -1,11 +1,11 @@
-package com.buy01.orderservice.service;
+package com.buy01.security;
 
-import com.buy01.orderservice.security.AuthenticatedUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
+import java.time.Instant;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +17,8 @@ public class JwtService {
 
     public AuthenticatedUser parseToken(String token) {
         Claims claims = extractAllClaims(token);
-        Date expiration = claims.getExpiration();
-        if (expiration != null && expiration.before(new Date())) {
+        Instant expiration = claims.getExpiration() == null ? null : claims.getExpiration().toInstant();
+        if (expiration != null && expiration.isBefore(Instant.now())) {
             throw new io.jsonwebtoken.JwtException("Token expired");
         }
 
@@ -42,9 +42,10 @@ public class JwtService {
     }
 
     private byte[] resolveSecretBytes() {
-        if (jwtSecret != null && jwtSecret.startsWith("base64:")) {
-            return io.jsonwebtoken.io.Decoders.BASE64.decode(jwtSecret.substring("base64:".length()));
+        String secret = Objects.requireNonNull(jwtSecret, "security.jwt.secret must be configured");
+        if (secret.startsWith("base64:")) {
+            return io.jsonwebtoken.io.Decoders.BASE64.decode(secret.substring("base64:".length()));
         }
-        return jwtSecret.getBytes(StandardCharsets.UTF_8);
+        return secret.getBytes(StandardCharsets.UTF_8);
     }
 }

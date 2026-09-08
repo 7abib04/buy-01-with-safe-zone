@@ -20,32 +20,32 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Full name</label>
-              <input type="text" formControlName="fullName" [class.invalid]="isInvalid('fullName')" placeholder="Full name">
+              <label for="checkout-fullName">Full name</label>
+              <input id="checkout-fullName" type="text" formControlName="fullName" [class.invalid]="isInvalid('fullName')" placeholder="Full name">
             </div>
             <div class="form-group">
-              <label>Phone</label>
-              <input type="text" formControlName="phone" [class.invalid]="isInvalid('phone')" placeholder="Phone number">
+              <label for="checkout-phone">Phone</label>
+              <input id="checkout-phone" type="text" formControlName="phone" [class.invalid]="isInvalid('phone')" placeholder="Phone number">
             </div>
           </div>
 
           <div class="form-group">
-            <label>Address</label>
-            <input type="text" formControlName="line1" [class.invalid]="isInvalid('line1')" placeholder="Street address">
+            <label for="checkout-line1">Address</label>
+            <input id="checkout-line1" type="text" formControlName="line1" [class.invalid]="isInvalid('line1')" placeholder="Street address">
           </div>
 
           <div class="form-row three">
             <div class="form-group">
-              <label>City</label>
-              <input type="text" formControlName="city" [class.invalid]="isInvalid('city')" placeholder="City">
+              <label for="checkout-city">City</label>
+              <input id="checkout-city" type="text" formControlName="city" [class.invalid]="isInvalid('city')" placeholder="City">
             </div>
             <div class="form-group">
-              <label>Postal code</label>
-              <input type="text" formControlName="postalCode" [class.invalid]="isInvalid('postalCode')" placeholder="Postal code">
+              <label for="checkout-postalCode">Postal code</label>
+              <input id="checkout-postalCode" type="text" formControlName="postalCode" [class.invalid]="isInvalid('postalCode')" placeholder="Postal code">
             </div>
             <div class="form-group">
-              <label>Country</label>
-              <input type="text" formControlName="country" [class.invalid]="isInvalid('country')" placeholder="Country">
+              <label for="checkout-country">Country</label>
+              <input id="checkout-country" type="text" formControlName="country" [class.invalid]="isInvalid('country')" placeholder="Country">
             </div>
           </div>
 

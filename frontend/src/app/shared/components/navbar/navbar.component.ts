@@ -11,8 +11,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LogOut, ShoppingCart } from 'lucide-angular';
-import { LucideAngularModule } from 'lucide-angular';
+import { LogOut, ShoppingCart, LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { Observable, distinctUntilChanged } from 'rxjs';

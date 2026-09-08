@@ -40,7 +40,8 @@
 
       <div class="filter-group">
         <h2>Category</h2>
-        <select [(ngModel)]="categoryFilter" name="categoryFilter" (ngModelChange)="onFilterChange()">
+        <label class="visually-hidden" for="categoryFilter">Category</label>
+        <select id="categoryFilter" [(ngModel)]="categoryFilter" name="categoryFilter" (ngModelChange)="onFilterChange()">
           <option value="">All categories</option>
           <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
         </select>

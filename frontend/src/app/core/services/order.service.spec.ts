@@ -45,7 +45,7 @@ describe('OrderService', () => {
     service.getMyOrders().subscribe();
 
     const req = httpMock.expectOne('/api/orders');
-    expect(req.request.params.keys().length).toBe(0);
+    expect(req.request.params.keys()).toHaveSize(0);
     req.flush(samplePage);
   });
 

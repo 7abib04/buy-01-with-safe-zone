@@ -18,12 +18,12 @@ type CheckoutStep = 'address' | 'review' | 'confirm';
   styleUrl: './checkout.component.scss'
 })
 export class CheckoutComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private cartService = inject(CartService);
-  private orderService = inject(OrderService);
-  private authService = inject(AuthService);
-  private toastService = inject(ToastService);
-  private router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly cartService = inject(CartService);
+  private readonly orderService = inject(OrderService);
+  private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
 
   addressForm!: FormGroup;
   step: CheckoutStep = 'address';

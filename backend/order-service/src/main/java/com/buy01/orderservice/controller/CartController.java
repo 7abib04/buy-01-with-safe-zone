@@ -3,7 +3,7 @@ package com.buy01.orderservice.controller;
 import com.buy01.orderservice.dto.CartItemRequest;
 import com.buy01.orderservice.dto.CartResponse;
 import com.buy01.orderservice.dto.UpdateCartItemRequest;
-import com.buy01.orderservice.security.AuthenticatedUser;
+import com.buy01.security.AuthenticatedUser;
 import com.buy01.orderservice.service.CartService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
