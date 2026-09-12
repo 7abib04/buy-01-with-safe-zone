@@ -8,7 +8,7 @@ def composeEnv() {
         'COMPOSE_DOCKER_CLI_BUILD=1'
     ]
 }
-
+// test
 def healthCheckScript() {
     return '''
         set -e
