@@ -30,6 +30,6 @@ import { LucideAngularModule, ShieldAlert } from 'lucide-angular';
 })
 export class ForbiddenComponent {
   readonly ShieldAlertIcon = ShieldAlert;
-  constructor(private router: Router) {}
+  constructor(private readonly router: Router) {}
   goHome() { this.router.navigate(['/']); }
 }
